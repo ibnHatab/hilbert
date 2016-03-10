@@ -1,12 +1,12 @@
 {
     "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
-    "repository": "https://github.com/user/project.git",
-    "license": "BSD3",
+    "summary": "Hilbert's Curve, and the one dimensional translation. ",
+    "repository": "https://github.com/ibnHatab/hilbert.git",
+    "license": "The Artistic License 2.0",
     "source-directories": [
         "src"
     ],
-    "exposed-modules": [],
+    "exposed-modules": ["Hilbert"],
     "dependencies": {
         "elm-lang/core": "3.0.0 <= v < 4.0.0"
     },
