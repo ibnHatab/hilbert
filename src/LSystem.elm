@@ -20,33 +20,30 @@ applyRules rs s =
 evolve : LSystem -> LSystem
 evolve ls =
   let srinker symbol = applyRules ls.rules symbol
-      newState = List.map (srinker) ls.axiom |> List.concat
+      newState = List.concatMap (srinker) ls.axiom
   in
     { ls | axiom = newState }
 
-unfold : Int -> (a -> a) -> a -> List a
-unfold n f x = if n==0 then [] else
-  let res=f x in (res :: unfold (n-1) f res)
+iterate : Int -> state -> (state -> state) -> state
+iterate n s f  = if n == 0 then s
+                 else iterate (n-1) (f s) f
 
--- forward : Int -> (LSystem -> LSystem) -> LSystem ->
-forward gen ls =
-  unfold gen evolve ls
-
-
--- compute nth generation of lSystem
--- generation : Int -> LSystem -> LSystem
--- generation gen ls =
-
---   ls
---   |> forward
---   |> List.drop gen
---   |> List.head
---   |> Maybe.withDefault ls
+{-| compute nth generation of lSystem -}
+generation : Int -> LSystem -> LSystem
+generation gen ls = iterate gen ls evolve
 
 
-serpinski : LSystem
-serpinski =
-  { axiom = [ 'A' ],
-    rules = [ ('A', [ 'B', '>', 'A', '>', 'B' ])
-            , ('B', [ 'A', '<', 'B', '<', 'A' ]) ] |> Dict.fromList
-  }
+-- serpinski : LSystem
+-- serpinski =
+--   { axiom = [ 'A' ],
+--     rules = [ ('A', [ 'B', '>', 'A', '>', 'B' ])
+--             , ('B', [ 'A', '<', 'B', '<', 'A' ]) ] |> Dict.fromList
+--   }
+
+-- hilbert : LSystem
+-- hilbert =
+--   { axiom = [ 'A' ],
+--     rules = [ ('A', [ '−', 'B', 'F', '+', 'A', 'F', 'A', '+', 'F', 'B', '−'])
+--             , ('B', [ '+', 'A', 'F', '−', 'B', 'F', 'B', '−', 'F', 'A', '+']) ]
+--           |> Dict.fromList
+--   }
