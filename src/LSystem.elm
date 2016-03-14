@@ -2,6 +2,7 @@ module LSystem where
 
 import Dict exposing (Dict)
 import List exposing (..)
+import String exposing (toList)
 
 type alias Symbol = Char
 type alias State = List Symbol
@@ -47,3 +48,5 @@ generation gen ls = iterate gen ls evolve
 --             , ('B', [ '+', 'A', 'F', '−', 'B', 'F', 'B', '−', 'F', 'A', '+']) ]
 --           |> Dict.fromList
 --   }
+(=>) a r = (a, toList r)
+hilbert = { axiom = ['L'], rules = ['L' => "+RF-LFL-FR+", 'R' => "-LF+RFR+FL-"] |> Dict.fromList }
