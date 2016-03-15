@@ -1,4 +1,4 @@
-module Hilbert (Model, init, Action, update, view) where
+module Hilbert (Model, init, Action(Order, Resize), update, view) where
 
 {-|
 
@@ -18,7 +18,6 @@ Here, "F" means "draw forward",
       "+" means "turn right 90°"
       "A" and "B" are ignored during drawing.
 
-
 -}
 
 import Color exposing (..)
@@ -33,6 +32,7 @@ import Effects exposing (..)
 
 import Dict
 import LSystem exposing (generation, LSystem)
+import Game exposing (Events)
 
 
 {-| L-system rules for Hilbert crve -}
@@ -43,10 +43,14 @@ hilbert =
             , ('B', toList "+AF-BFB-FA+") ] |> Dict.fromList
   }
 
+computePath order = LSystem.generation order hilbert
+                  |> .axiom
+                  |> List.filter (\c -> c /= 'A' && c /= 'B')
 {-|
 -}
 type alias Model =
-  { order : Int
+  { game : Signal.Address Events
+  , order : Int
   , path : List Char
   , dimention : Int
   }
@@ -54,30 +58,31 @@ type alias Model =
 -- init : Int -> (Int,Int) ->(Int,Int) -> Model
 {-|
 -}
-init : Int -> Int -> (Model, Effects Action)
-init order dimention =
-  let
-    path = LSystem.generation order hilbert
-         |> .axiom
-         |> List.filter (\c -> c /= 'A' && c /= 'B')
-  in ({ order = order
-      , path = path
-      , dimention = dimention
-     }, Effects.none)
-
+init : Signal.Address Events
+     -> Int
+     -> Int -> (Model, Effects Action)
+init game order dimention =
+  ({ game = game
+   , order = order
+   , path = computePath order
+   , dimention = dimention
+   }, Effects.none)
 
 {-|
 -}
 type Action
   = Resize Int
+  | Order Int
 
 {-|
 -}
 update : Action -> Model -> (Model, Effects Action)
 update act model =
-  case act of
+  case act |> Debug.log "hilb_act" of
     Resize w ->
-      ( model, Effects.none )
+      ( { model | dimention = w }, Effects.none )
+    Order order ->
+      ( {model | order = order, path = computePath order }, Effects.none )
 
 
 (=>) = (,)
@@ -86,19 +91,29 @@ update act model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    side = (toFloat model.dimention) / (toFloat (2^model.order))
-    hpath = drawHilbert side model.path
-    draw = collage model.dimention model.dimention [traced (solid red) hpath]
+    side = (toFloat model.dimention) / toFloat (2^model.order)
+    offset = (toFloat model.dimention / 2)
+    hpath = drawHilbert offset side model.path
+    draw = collage model.dimention model.dimention
+           [ traced (solid black) (path [ (offset,offset),
+                                          (offset,-offset),
+                                          (-offset,-offset),
+                                          (-offset,offset),
+                                          (offset,offset) ])
+           , traced (solid red) hpath
+           ]
   in
-  div [] [ fromElement draw ]
+  div [ style [ "width" => (toString model.dimention ++ "px") ]] [ fromElement draw ]
 
 {-|
 direction (x, y) - unit vector
 (x, y) rotated -90 degrees around (0, 0) is (-y, x), rotate clockwise (y, -x)
 -}
-drawHilbert : Float -> List Char -> Path
-drawHilbert side p =
-  (List.foldr (turttle side) ((1, 0), [(0.0, 0.0)]) p) |> snd |> path
+-- drawHilbert : Float -> Float -> List Char -> Path
+drawHilbert offset side p =
+  (List.foldr (turttle side) ((1, 0), [(-offset+side/2, -offset+side/2)]) p)
+    |> snd
+    |> path
 
 turttle side instruction ((dx, dy), path) =
   case (instruction, path) of
@@ -106,14 +121,6 @@ turttle side instruction ((dx, dy), path) =
     ('-', _) -> ((-dy,dx), path)
     ('+', _) -> ((dy,-dx), path)
     otherwise -> Debug.crash (instruction `String.cons` " - unsuported instruction")
-
--- {-|-}
--- app = StartApp.start
---       { init = init
---       , update = update
---       , view = view
---       , inputs = [Window.dimensions]
---       }
 
 
 {-| -----------------------------  testing --------------
