@@ -10,12 +10,13 @@ module Game where
 -}
 type Events
   = Rank Int
+  | FreeMode Bool
   | ShowError String
 
 {-|
 -}
 maxRank : Int
-maxRank = 5
+maxRank = 6
 
 
 {-| Hilbert_Distance to point on plaine -}

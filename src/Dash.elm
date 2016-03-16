@@ -19,6 +19,7 @@ type alias Model =
   { game : Signal.Address Game.Events
   , rank : Int
   , width : Int
+  , bang : Bool
   }
 
 
@@ -31,6 +32,7 @@ init game rank width =
   ( { game = game
     , rank = rank
     , width = width
+    , bang = True
     }
   , Effects.none
   )
@@ -38,29 +40,36 @@ init game rank width =
 -- UPDATE
 
 {-|-}
-type Action = Increment | Decrement | Resize Int | TaskDone ()
+type Action = Increment
+            | Decrement
+            | Bang
+            | Resize Int
+            | TaskDone ()
 
 {-|-}
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   let checkRank new =  0 < new && new <= Game.maxRank
-      changeRankFx rank = Signal.send model.game (Game.Rank rank)
-                    |> Effects.task
-                    |> Effects.map TaskDone
-      showErrorFx msg = Signal.send model.game (Game.ShowError msg)
-                    |> Effects.task
-                    |> Effects.map TaskDone
-
+      notifyFx event = Signal.send model.game event
+                     |> Effects.task
+                     |> Effects.map TaskDone
   in
     case action |> Debug.log "dash_act" of
       Increment ->
         if checkRank (model.rank + 1)
-        then ({ model | rank = model.rank + 1 }, changeRankFx (model.rank + 1))
-        else (model, showErrorFx "Max rank!" )
+        then ({ model | rank = model.rank + 1 }, notifyFx (Game.Rank (model.rank + 1)))
+        else (model, notifyFx (Game.ShowError "Max rank!") )
+
       Decrement ->
         if checkRank (model.rank - 1)
-        then ({ model | rank = model.rank - 1 } , changeRankFx (model.rank - 1))
-        else (model, showErrorFx "Min rank!")
+        then ( { model | rank = model.rank - 1 }
+             , notifyFx (Game.Rank (model.rank - 1)))
+        else (model, notifyFx (Game.ShowError "Min rank!"))
+
+      Bang -> let bang = not model.bang
+              in ( { model | bang = bang }
+                 , notifyFx (Game.FreeMode bang))
+
       Resize width ->
         ( { model | width = width }, Effects.none)
       TaskDone () ->
@@ -93,9 +102,6 @@ view address model =
                    , onClick address Decrement ]
                [div [textStyle] [text (toString (model.rank - 1))]]
              ]
-                 --  button [ onClick address Decrement ] [ text "-" ]
-                 -- , div [ textStyle ] [ text (toString model.rank) ]
-                 -- , button [ onClick address Increment ] [ text "+" ]
   in div [ style ["height" => "25vw"] ]
      [ rank
        -- picters
@@ -109,10 +115,12 @@ view address model =
                    , "width" =>  "25vw"
                    , "height" =>  "25vw"
                    , "border-radius" =>  "15vw"
-                   , "background-color" => "red"
+                   , "background-color" => if model.bang
+                                           then "red"
+                                           else "green"
                    ]
-           -- FIXME: onClick
-           ] []
+           , onClick address Bang
+           ] [  ]
      ]
 
 textStyle : Attribute

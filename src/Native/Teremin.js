@@ -67,14 +67,14 @@ Elm.Native.Teremin.make = function(localRuntime) {
     }
 
 
-    function startOsc() {
-        source.start(0);
+    function startOsc(time) {
+        source.start(time);
         nodes.oscVolume.gain.value = 1;
     }
 
-    function stopOsc() {
+    function stopOsc(time) {
         nodes.oscVolume.gain.value = 0;
-        source.stop(0);
+        source.stop(time);
     }
 
     function playSound(buffer, time) {

@@ -23,7 +23,7 @@ type alias Model =
   {
     dash: Dash.Model
   , hilbert : Hilbert.Model
-  , errorMessage : Maybe String
+  , statusString : Maybe String
   }
 
 init : (Model, Effects Action)
@@ -71,7 +71,16 @@ update message model =
           update (Hilbert (Hilbert.Order order)) model
 
         Game.ShowError s ->
-          ({model | errorMessage = Just s}, Effects.none)
+          ({model | statusString = Just s}, Effects.none)
+
+        Game.FreeMode flag ->
+          let
+            (hilbert, hilbertFx) = Hilbert.update (Hilbert.GameOn flag) model.hilbert
+          in
+            ( { model | hilbert = hilbert
+              , statusString = if flag then Just "Free drawing mode" else Nothing}
+            , Effects.map Hilbert hilbertFx
+            )
 
     Dash act ->
       let
@@ -100,7 +109,7 @@ view address model =
                     , "font-family" => "monospace"
                     , "text-align" => "left"
                     ]]
-              [text (Maybe.withDefault ">>" model.errorMessage)]
+              [text (Maybe.withDefault ">>" model.statusString)]
       ]
 
 -- APP

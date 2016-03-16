@@ -1,4 +1,4 @@
-module Hilbert (Model, init, Action(Order, Resize), update, view) where
+module Hilbert (Model, init, Action(Order, Resize, GameOn), update, view) where
 
 {-|
 
@@ -34,6 +34,7 @@ import Dict
 
 import LSystem exposing (generation, LSystem)
 import Game exposing (Events)
+import Teremin
 
 
 {-| L-system rules for Hilbert crve -}
@@ -54,6 +55,7 @@ type alias Model =
   , order : Int
   , path : List Char
   , dimention : Int
+  , gameOn : Bool
   }
 
 -- init : Int -> (Int,Int) ->(Int,Int) -> Model
@@ -67,6 +69,7 @@ init game order dimention =
    , order = order
    , path = computePath order
    , dimention = dimention
+   , gameOn = False
    }, Effects.none)
 
 {-|
@@ -74,6 +77,7 @@ init game order dimention =
 type Action
   = Resize Int
   | Order Int
+  | GameOn Bool
 
 {-|
 -}
@@ -85,6 +89,12 @@ update act model =
     Order order ->
       ( {model | order = order, path = computePath order }, Effects.none )
 
+    GameOn flag ->
+      let
+        _ = if not flag then Teremin.startOsc 0 else Teremin.stopOsc 0
+      in
+        ( {model | gameOn = flag}
+        , Effects.none)
 
 (=>) = (,)
 {-|
@@ -109,8 +119,6 @@ view address model =
               , "border-radius" => "10vw"
               , "background-color" => "yellow"
         ]] [ fromElement draw ]
---
-        -- "width" => (toString model.dimention ++ "px")
 
 {-|
 direction (x, y) - unit vector
