@@ -2,4 +2,10 @@
 
 * Hilbert's Curve, and the one dimensional translation
 
-* Try it:
+* Try it: [[http://rawgit.com/ibnHatab/hilbert/master/index.html]]
+
+* Refs
+  - single page design http://www.elm-tutorial.org/
+  - intro ro WebAudio http://www.html5rocks.com/en/tutorials/webaudio/intro/?redirect_from_locale=fr
+  - pitches and instrument presets http://codecur.io/us/projects/song-demo
+  - WAVE-PD1 https://alexgibson.github.io/wavepad/

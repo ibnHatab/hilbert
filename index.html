@@ -12095,7 +12095,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 119,column: 3},end: {line: 123,column: 85}},
+      {start: {line: 120,column: 3},end: {line: 124,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -12188,6 +12188,21 @@ Elm.Hilbert.make = function (_elm) {
                                 ,Model: Model
                                 ,Order: Order
                                 ,Resize: Resize};
+};Elm.Teremin = Elm.Teremin || {};
+Elm.Teremin.make = function (_elm) {
+   "use strict";
+   _elm.Teremin = _elm.Teremin || {};
+   if (_elm.Teremin.values) return _elm.Teremin.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var init = $Native$Teremin.init;
+   return _elm.Teremin.values = {_op: _op,init: init};
 };Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
    "use strict";
@@ -12208,6 +12223,7 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm),
+   $Teremin = Elm.Teremin.make(_elm),
    $Window = Elm.Window.make(_elm);
    var _op = {};
    _op["=>"] = F2(function (v0,v1) {
@@ -12303,6 +12319,7 @@ Elm.Main.make = function (_elm) {
       var _p9 = A3($Hilbert.init,game,order,width);
       var hilbert = _p9._0;
       var hilbertFx = _p9._1;
+      var _p10 = $Teremin.init(0);
       return {ctor: "_Tuple2"
              ,_0: A2(Model,dash,hilbert)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)

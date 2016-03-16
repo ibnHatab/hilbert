@@ -4,11 +4,13 @@
     "repository": "https://github.com/ibnHatab/hilbert.git",
     "license": "The Artistic License 2.0",
     "source-directories": [
-        "src"
+        "src",
+        "src/Native"
     ],
     "exposed-modules": [
-        "Hilbert", "Dash", "LSystem", "Game"
+        "Hilbert", "Dash", "LSystem", "Game", "Teremin"
     ],
+    "native-modules": true,
     "dependencies": {
         "elm-lang/core": "3.0.0 <= v < 4.0.0",
         "evancz/elm-effects": "2.0.1 <= v < 3.0.0",

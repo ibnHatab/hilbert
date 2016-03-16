@@ -14,6 +14,7 @@ import Task exposing (Task)
 import Hilbert exposing (..) -- (init, update, view, Action)
 import Dash exposing (init, update, view)
 import Game exposing (Events)
+import Teremin
 
 import Debug
 
@@ -27,6 +28,7 @@ type alias Model =
 init : (Model, Effects Action)
 init =
   let
+    _ = Teremin.init(0)
     order = 4
     (width, height) = (400, 600)
 
