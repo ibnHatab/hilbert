@@ -104,7 +104,13 @@ view address model =
            , traced (solid red) hpath
            ]
   in
-  div [ style [ "width" => (toString model.dimention ++ "px") ]] [ fromElement draw ]
+  div [ style [ "height" => "100vw"
+              , "width" => "100vw"
+              , "border-radius" => "10vw"
+              , "background-color" => "yellow"
+        ]] [ fromElement draw ]
+--
+        -- "width" => (toString model.dimention ++ "px")
 
 {-|
 direction (x, y) - unit vector

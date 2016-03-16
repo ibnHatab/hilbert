@@ -10,6 +10,7 @@ module Game where
 -}
 type Events
   = Rank Int
+  | ShowError String
 
 {-|
 -}

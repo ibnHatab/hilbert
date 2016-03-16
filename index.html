@@ -11868,9 +11868,13 @@ Elm.Game.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var maxRank = 5;
+   var ShowError = function (a) {
+      return {ctor: "ShowError",_0: a};
+   };
    var Rank = function (a) {    return {ctor: "Rank",_0: a};};
    return _elm.Game.values = {_op: _op
                              ,Rank: Rank
+                             ,ShowError: ShowError
                              ,maxRank: maxRank};
 };Elm.Dash = Elm.Dash || {};
 Elm.Dash.make = function (_elm) {
@@ -11890,17 +11894,26 @@ Elm.Dash.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var countStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
-                                                    ,_0: "font-size"
-                                                    ,_1: "20px"}
-                                                   ,{ctor: "_Tuple2",_0: "font-family",_1: "monospace"}
-                                                   ,{ctor: "_Tuple2",_0: "display",_1: "inline-block"}
-                                                   ,{ctor: "_Tuple2",_0: "width",_1: "50px"}
-                                                   ,{ctor: "_Tuple2",_0: "text-align",_1: "center"}]));
+   _op["=>"] = F2(function (v0,v1) {
+      return {ctor: "_Tuple2",_0: v0,_1: v1};
+   });
+   var textStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                  "font-size",
+                                                  "12vw")
+                                                  ,A2(_op["=>"],"font-family","monospace")
+                                                  ,A2(_op["=>"],"width","25vw")
+                                                  ,A2(_op["=>"],"text-align","center")]));
    var TaskDone = function (a) {
       return {ctor: "TaskDone",_0: a};
    };
    var update = F2(function (action,model) {
+      var showErrorFx = function (msg) {
+         return A2($Effects.map,
+         TaskDone,
+         $Effects.task(A2($Signal.send,
+         model.game,
+         $Game.ShowError(msg))));
+      };
       var changeRankFx = function (rank) {
          return A2($Effects.map,
          TaskDone,
@@ -11915,71 +11928,91 @@ Elm.Dash.make = function (_elm) {
          return checkRank(model.rank + 1) ? {ctor: "_Tuple2"
                                             ,_0: _U.update(model,{rank: model.rank + 1})
                                             ,_1: changeRankFx(model.rank + 1)} : {ctor: "_Tuple2"
-                                                                                 ,_0: _U.update(model,{errorMessage: $Maybe.Just("Max rank!")})
-                                                                                 ,_1: $Effects.none};
+                                                                                 ,_0: model
+                                                                                 ,_1: showErrorFx("Max rank!")};
          case "Decrement":
          return checkRank(model.rank - 1) ? {ctor: "_Tuple2"
                                             ,_0: _U.update(model,{rank: model.rank - 1})
                                             ,_1: changeRankFx(model.rank - 1)} : {ctor: "_Tuple2"
-                                                                                 ,_0: _U.update(model,{errorMessage: $Maybe.Just("Min rank!")})
-                                                                                 ,_1: $Effects.none};
+                                                                                 ,_0: model
+                                                                                 ,_1: showErrorFx("Min rank!")};
          case "Resize": return {ctor: "_Tuple2"
                                ,_0: _U.update(model,{width: _p0._0})
                                ,_1: $Effects.none};
-         case "Error": return {ctor: "_Tuple2"
-                              ,_0: _U.update(model,{errorMessage: $Maybe.Just(_p0._0)})
-                              ,_1: $Effects.none};
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
-   var Error = function (a) {    return {ctor: "Error",_0: a};};
    var Resize = function (a) {    return {ctor: "Resize",_0: a};};
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
    var view = F2(function (address,model) {
-      var redButton = A2($Html.div,
-      _U.list([]),
-      _U.list([$Html.text("Red button")]));
-      var glifDiv = A2($Html.div,
-      _U.list([]),
-      _U.list([$Html.text("Glif")]));
-      var errMsgDiv = A2($Html.div,
-      _U.list([]),
-      _U.list([$Html.text(A2($Maybe.withDefault,
-      "",
-      model.errorMessage))]));
-      var rankDiv = A2($Html.div,
-      _U.list([]),
-      _U.list([A2($Html.button,
-              _U.list([A2($Html$Events.onClick,address,Decrement)]),
-              _U.list([$Html.text("-")]))
+      var rank = A2($Html.div,
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                              "float",
+                                              "left")
+                                              ,A2(_op["=>"],"width","25vw")
+                                              ,A2(_op["=>"],"height","25vw")]))]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                      "float",
+                                                      "left")
+                                                      ,A2(_op["=>"],"width","25vw")
+                                                      ,A2(_op["=>"],"border-radius","15vw")
+                                                      ,A2(_op["=>"],"height","12vw")
+                                                      ,A2(_op["=>"],"background-color","red")]))
+                      ,A2($Html$Events.onClick,address,Increment)]),
+              _U.list([A2($Html.div,
+              _U.list([textStyle]),
+              _U.list([$Html.text($Basics.toString(model.rank))]))]))
               ,A2($Html.div,
-              _U.list([countStyle]),
-              _U.list([$Html.text($Basics.toString(model.rank))]))
-              ,A2($Html.button,
-              _U.list([A2($Html$Events.onClick,address,Increment)]),
-              _U.list([$Html.text("+")]))]));
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                      "float",
+                                                      "left")
+                                                      ,A2(_op["=>"],"width","25vw")
+                                                      ,A2(_op["=>"],"border-radius","15vw")
+                                                      ,A2(_op["=>"],"height","13vw")
+                                                      ,A2(_op["=>"],"background-color","green")]))
+                      ,A2($Html$Events.onClick,address,Decrement)]),
+              _U.list([A2($Html.div,
+              _U.list([textStyle]),
+              _U.list([$Html.text($Basics.toString(model.rank - 1))]))]))]));
       return A2($Html.div,
-      _U.list([]),
-      _U.list([rankDiv,errMsgDiv,glifDiv,redButton]));
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+      "height",
+      "25vw")]))]),
+      _U.list([rank
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                      "float",
+                                                      "left")
+                                                      ,A2(_op["=>"],"width","47vw")
+                                                      ,A2(_op["=>"],"height","25vw")
+                                                      ,A2(_op["=>"],"border-radius","15vw")
+                                                      ,A2(_op["=>"],"border","1px solid blue")]))]),
+              _U.list([]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                      "float",
+                                                      "right")
+                                                      ,A2(_op["=>"],"width","25vw")
+                                                      ,A2(_op["=>"],"height","25vw")
+                                                      ,A2(_op["=>"],"border-radius","15vw")
+                                                      ,A2(_op["=>"],"background-color","red")]))]),
+              _U.list([]))]));
    });
    var init = F3(function (game,rank,width) {
       return {ctor: "_Tuple2"
-             ,_0: {game: game
-                  ,rank: rank
-                  ,errorMessage: $Maybe.Nothing
-                  ,width: width}
+             ,_0: {game: game,rank: rank,width: width}
              ,_1: $Effects.none};
    });
-   var Model = F4(function (a,b,c,d) {
-      return {game: a,rank: b,errorMessage: c,width: d};
+   var Model = F3(function (a,b,c) {
+      return {game: a,rank: b,width: c};
    });
    return _elm.Dash.values = {_op: _op
                              ,init: init
                              ,update: update
                              ,view: view
                              ,Model: Model
-                             ,Resize: Resize
-                             ,Error: Error};
+                             ,Resize: Resize};
 };Elm.LSystem = Elm.LSystem || {};
 Elm.LSystem.make = function (_elm) {
    "use strict";
@@ -12034,12 +12067,8 @@ Elm.LSystem.make = function (_elm) {
       return {axiom: a,rules: b};
    });
    return _elm.LSystem.values = {_op: _op
-                                ,LSystem: LSystem
-                                ,applyRules: applyRules
-                                ,evolve: evolve
-                                ,iterate: iterate
                                 ,generation: generation
-                                ,hilbert: hilbert};
+                                ,LSystem: LSystem};
 };Elm.Hilbert = Elm.Hilbert || {};
 Elm.Hilbert.make = function (_elm) {
    "use strict";
@@ -12095,7 +12124,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 120,column: 3},end: {line: 124,column: 85}},
+      {start: {line: 126,column: 3},end: {line: 130,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -12133,10 +12162,11 @@ Elm.Hilbert.make = function (_elm) {
               hpath)]));
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-      "width",
-      A2($Basics._op["++"],
-      $Basics.toString(model.dimention),
-      "px"))]))]),
+                                              "height",
+                                              "100vw")
+                                              ,A2(_op["=>"],"width","100vw")
+                                              ,A2(_op["=>"],"border-radius","10vw")
+                                              ,A2(_op["=>"],"background-color","yellow")]))]),
       _U.list([$Html.fromElement(draw)]));
    });
    var Order = function (a) {    return {ctor: "Order",_0: a};};
@@ -12188,7 +12218,100 @@ Elm.Hilbert.make = function (_elm) {
                                 ,Model: Model
                                 ,Order: Order
                                 ,Resize: Resize};
-};Elm.Teremin = Elm.Teremin || {};
+};Elm.Native.Teremin = {};
+Elm.Native.Teremin.make = function(localRuntime) {
+
+    localRuntime.Native = localRuntime.Native || {};
+    localRuntime.Native.Teremin = localRuntime.Native.Teremin || {};
+
+    if (localRuntime.Native.Teremin.values)
+    {
+	return localRuntime.Native.Teremin.values;
+    }
+
+    var options = {
+        waveform: 'square',
+        filter: 'lowpass',
+        delay: 0.500,
+        feedback: 0.4
+    };
+
+    var context = null;
+    var source = null;
+    var nodes = {};
+
+    function createWebAudioNodes() {
+        nodes.oscVolume    = context.createGain();
+        nodes.filter       = context.createBiquadFilter();
+        nodes.volume       = context.createGain();
+        nodes.delay        = context.createDelay();
+        nodes.feedbackGain = context.createGain();
+        nodes.compressor   = context.createDynamicsCompressor();
+    }
+
+    function routeSounds() {
+        source = context.createOscillator();
+        source.type = options.waveform;
+
+        nodes.filter.type = options.filter;
+
+        nodes.feedbackGain.gain.value = options.feedback;
+        nodes.delay.delayTime.value = options.delay;
+        nodes.volume.gain.value = 0.2;
+        nodes.oscVolume.gain.value = 0;
+
+        source.connect(nodes.oscVolume);
+        nodes.oscVolume.connect(nodes.filter);
+        nodes.filter.connect(nodes.compressor);
+        nodes.filter.connect(nodes.delay);
+        nodes.delay.connect(nodes.feedbackGain);
+        nodes.delay.connect(nodes.compressor);
+        nodes.feedbackGain.connect(nodes.delay);
+        nodes.compressor.connect(nodes.volume);
+        nodes.volume.connect(context.destination);
+    }
+
+    function init(args) {
+        console.error("Initialize teremin." + args);
+
+        try {
+            window.AudioContext = window.AudioContext||window.webkitAudioContext;
+            context = new AudioContext();
+        }
+        catch(e) {
+            alert('Web Audio API is not supported in this browser');
+        }
+
+        createWebAudioNodes();
+        routeSounds();
+    }
+
+
+    function startOsc() {
+        source.start(0);
+        nodes.oscVolume.gain.value = 1;
+    }
+
+    function stopOsc() {
+        nodes.oscVolume.gain.value = 0;
+        source.stop(0);
+    }
+
+    function playSound(buffer, time) {
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.start(time);
+    }
+
+    return localRuntime.Native.Teremin.values = {
+        init: init,
+        startOsc: startOsc,
+        stopOsc: stopOsc,
+        playSound: playSound
+    };
+};
+Elm.Teremin = Elm.Teremin || {};
 Elm.Teremin.make = function (_elm) {
    "use strict";
    _elm.Teremin = _elm.Teremin || {};
@@ -12198,6 +12321,7 @@ Elm.Teremin.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Native$Teremin = Elm.Native.Teremin.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
@@ -12255,13 +12379,16 @@ Elm.Main.make = function (_elm) {
                      ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
                                                  ,A2($Effects.map,Hilbert,hilbertFx)]))};
             case "Game": var _p4 = _p0._0;
-              var _v2 = Hilbert($Hilbert.Order(_p4._0)),_v3 = model;
-              message = _v2;
-              model = _v3;
-              continue update;
-            case "ShowError": return {ctor: "_Tuple2"
-                                     ,_0: model
-                                     ,_1: $Effects.none};
+              if (_p4.ctor === "Rank") {
+                    var _v2 = Hilbert($Hilbert.Order(_p4._0)),_v3 = model;
+                    message = _v2;
+                    model = _v3;
+                    continue update;
+                 } else {
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.update(model,{errorMessage: $Maybe.Just(_p4._0)})
+                           ,_1: $Effects.none};
+                 }
             case "Dash": var _p5 = A2($Dash.update,_p0._0,model.dash);
               var dash = _p5._0;
               var dashFx = _p5._1;
@@ -12278,37 +12405,51 @@ Elm.Main.make = function (_elm) {
    });
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                              "display",
-                                              "flex")
-                                              ,A2(_op["=>"],"flex-wrap","wrap")
-                                              ,A2(_op["=>"],"margin","10px")]))]),
-      _U.list([A2($Dash.view,
-              A2($Signal.forwardTo,address,Dash),
-              model.dash)
+      _U.list([]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+              "height",
+              "2vw")]))]),
+              _U.list([]))
+              ,A2($Dash.view,A2($Signal.forwardTo,address,Dash),model.dash)
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+              "height",
+              "2vw")]))]),
+              _U.list([]))
               ,A2($Hilbert.view,
               A2($Signal.forwardTo,address,Hilbert),
-              model.hilbert)]));
+              model.hilbert)
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+              "height",
+              "5vw")]))]),
+              _U.list([]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                                      "height",
+                                                      "7vw")
+                                                      ,A2(_op["=>"],"border","1px solid black")
+                                                      ,A2(_op["=>"],"font-size","6vw")
+                                                      ,A2(_op["=>"],"font-family","monospace")
+                                                      ,A2(_op["=>"],"text-align","left")]))]),
+              _U.list([$Html.text(A2($Maybe.withDefault,
+              ">>",
+              model.errorMessage))]))]));
    });
    var NoOp = {ctor: "NoOp"};
    var actionsMb = $Signal.mailbox(NoOp);
-   var ShowError = function (a) {
-      return {ctor: "ShowError",_0: a};
-   };
    var WindowResize = function (a) {
       return {ctor: "WindowResize",_0: a};
    };
    var windowResize = A2($Signal.map,
    WindowResize,
    $Window.dimensions);
-   var Model = F2(function (a,b) {
-      return {dash: a,hilbert: b};
+   var Model = F3(function (a,b,c) {
+      return {dash: a,hilbert: b,errorMessage: c};
    });
    var init = function () {
       var game = A2($Signal.forwardTo,actionsMb.address,Game);
-      var showErrorAddress = A2($Signal.forwardTo,
-      actionsMb.address,
-      ShowError);
       var _p7 = {ctor: "_Tuple2",_0: 400,_1: 600};
       var width = _p7._0;
       var height = _p7._1;
@@ -12321,7 +12462,7 @@ Elm.Main.make = function (_elm) {
       var hilbertFx = _p9._1;
       var _p10 = $Teremin.init(0);
       return {ctor: "_Tuple2"
-             ,_0: A2(Model,dash,hilbert)
+             ,_0: A3(Model,dash,hilbert,$Maybe.Nothing)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
                                          ,A2($Effects.map,Hilbert,hilbertFx)]))};
    }();
@@ -12336,7 +12477,6 @@ Elm.Main.make = function (_elm) {
                              ,Model: Model
                              ,init: init
                              ,WindowResize: WindowResize
-                             ,ShowError: ShowError
                              ,NoOp: NoOp
                              ,Dash: Dash
                              ,Hilbert: Hilbert

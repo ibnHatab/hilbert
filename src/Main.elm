@@ -23,6 +23,7 @@ type alias Model =
   {
     dash: Dash.Model
   , hilbert : Hilbert.Model
+  , errorMessage : Maybe String
   }
 
 init : (Model, Effects Action)
@@ -32,20 +33,18 @@ init =
     order = 4
     (width, height) = (400, 600)
 
-    showErrorAddress = Signal.forwardTo actionsMb.address ShowError
     game = Signal.forwardTo actionsMb.address Game
 
     (dash, dashFx) = Dash.init game order width
     (hilbert, hilbertFx) = Hilbert.init game order width
   in
-    ( Model dash hilbert
+    ( Model dash hilbert Nothing
     , Effects.batch [ Effects.map Dash dashFx, Effects.map Hilbert hilbertFx]
     )
 
 -- UPDATE
 type Action
   = WindowResize (Int, Int)
-  | ShowError String
   | NoOp
   -- subforms
   | Dash Dash.Action
@@ -68,10 +67,11 @@ update message model =
 
     Game act ->
       case act of
-        Game.Rank order -> update (Hilbert (Hilbert.Order order)) model
+        Game.Rank order ->
+          update (Hilbert (Hilbert.Order order)) model
 
-    ShowError s ->
-      (model, Effects.none)
+        Game.ShowError s ->
+          ({model | errorMessage = Just s}, Effects.none)
 
     Dash act ->
       let
@@ -87,9 +87,20 @@ update message model =
 (=>) = (,)
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
-  div [ style [ "display" => "flex", "flex-wrap" => "wrap", "margin" => "10px" ] ]
-      [ Dash.view (Signal.forwardTo address Dash) model.dash
+  div []
+      [ div [ style [ "height" => "2vw"]] []
+      , Dash.view (Signal.forwardTo address Dash) model.dash
+      , div [ style [ "height" => "2vw"]] []
       , Hilbert.view (Signal.forwardTo address Hilbert) model.hilbert
+      , div [ style [ "height" => "5vw"]] []
+      -- status line
+      , div [ style [ "height" => "7vw"
+                    , "border" => "1px solid black"
+                    , "font-size" => "6vw"
+                    , "font-family" => "monospace"
+                    , "text-align" => "left"
+                    ]]
+              [text (Maybe.withDefault ">>" model.errorMessage)]
       ]
 
 -- APP

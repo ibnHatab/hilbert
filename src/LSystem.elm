@@ -1,4 +1,8 @@
-module LSystem where
+module LSystem (LSystem, generation) where
+
+{-|
+@docs LSystem, generation
+-}
 
 import Dict exposing (Dict)
 import List exposing (..)
@@ -8,6 +12,8 @@ type alias Symbol = Char
 type alias State = List Symbol
 type alias Rules = Dict Symbol State
 
+{-| Defined by
+-}
 type alias LSystem = { axiom : State
                      , rules : Rules }
 

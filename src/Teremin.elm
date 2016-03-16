@@ -5,6 +5,8 @@ module Teremin (init) where
 
 -}
 
+import Native.Teremin
+
 {-|-}
 init : Int -> ()
 init =
