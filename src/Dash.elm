@@ -1,4 +1,4 @@
-module Dash (Action(Resize), Model, init, update, view) where
+module Dash (Action, Model, init, update, view) where
 
 {-|
 @docs Model, Action, init, update, view
@@ -18,7 +18,6 @@ import Game
 type alias Model =
   { game : Signal.Address Game.Events
   , rank : Int
-  , width : Int
   , freeMode : Bool
   }
 
@@ -26,12 +25,10 @@ type alias Model =
 {-|-}
 init : Signal.Address Game.Events
      -> Int
-     -> Int
      -> (Model, Effects Action)
-init game rank width =
+init game rank =
   ( { game = game
     , rank = rank
-    , width = width
     , freeMode = False
     }
   , Effects.none
@@ -43,7 +40,6 @@ init game rank width =
 type Action = Increment
             | Decrement
             | FreeMode
-            | Resize Int
             | TaskDone ()
 
 {-|-}
@@ -70,8 +66,6 @@ update action model =
               in ( { model | freeMode = freeMode }
                  , notifyFx (Game.FreeMode freeMode))
 
-      Resize width ->
-        ( { model | width = width }, Effects.none)
       TaskDone () ->
         ( model, Effects.none )
 
@@ -106,7 +100,7 @@ view address model =
      [ rank
        -- picters
      , div [ style [ "float" => "left"
-                   , "width" => "47vw"
+                   , "width" => "46vw"
                    , "height" => "25vw"
                    , "border-radius" => "15vw"
                    , "border" => "1px solid blue"

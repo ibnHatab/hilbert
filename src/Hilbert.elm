@@ -1,8 +1,33 @@
-module Hilbert (Model, init, Action(Order, Resize, FreeMode), update, view) where
+module Hilbert (Model, init, Action(Order, Resize, FreeMode, MousePos), update, view) where
 
 {-|
 
 @docs Model, init, Action, update, view
+
+
+-}
+
+import Color exposing (..)
+import Graphics.Collage exposing (..)
+import Graphics.Element exposing (..)
+
+import Html exposing (Html, div, fromElement, text)
+import Html.Attributes exposing (style)
+import Html.Events exposing (..)
+
+import Effects exposing (..)
+
+import Bitwise exposing (..)
+import String
+import Dict
+
+import LSystem exposing (generation, LSystem)
+import Game exposing (Events)
+import Teremin
+
+import Time exposing (Time, second)
+
+{-| L-system rules for Hilbert crve
 
 The Hilbert Curve can be expressed by a rewrite system (L-system).
 
@@ -19,25 +44,6 @@ Here, "F" means "draw forward",
       "A" and "B" are ignored during drawing.
 
 -}
-
-import Color exposing (..)
-import Graphics.Collage exposing (..)
-import Graphics.Element exposing (..)
-
-import Html exposing (Html, div, fromElement, text)
-import Html.Attributes exposing (style)
-
-import Effects exposing (..)
-
-import String
-import Dict
-
-import LSystem exposing (generation, LSystem)
-import Game exposing (Events)
-import Teremin
-
-
-{-| L-system rules for Hilbert crve -}
 hilbert : LSystem
 hilbert =
   { axiom = [ 'A' ],
@@ -48,53 +54,116 @@ hilbert =
 computePath order = LSystem.generation order hilbert
                   |> .axiom
                   |> List.filter (\c -> c /= 'A' && c /= 'B')
+
+{-| Hilbert Distance to point on plaine -}
+hilbertDistance : Int -> (Int, Int) -> Int
+hilbertDistance d (x,y) =
+  let dist side area result x y =
+      if side == 0 then result else
+        let step = dist (side `shiftRight` 1) (area `shiftRight` 2)
+        in case (compare x side, compare y side) of
+             (LT, LT) -> step result y x
+             (LT, _)  -> step (result + area) x (y - side)
+             (_, LT)  -> step (result + area * 3) (side - y - 1) (side * 2 - x - 1)
+             (_, _)   -> step (result + area * 2) (x - side) (y - side)
+  in dist (1 `shiftLeft` (d - 1)) (1 `shiftLeft` ((d - 1) * 2)) 0 x y
+
+
+{-| point on plaine from Hilbert Distance -}
+hilbertPoint : Int -> Int -> (Int, Int)
+hilbertPoint d n =
+  let point side area (x, y) n =
+        if side == 0 then (x, y) else
+          let step = point (side `shiftRight` 1) (area `shiftRight` 2)
+              divMod x y = (x // y, x % y)
+          in case n `divMod` area  of
+               (0, rest) -> step (x, y) rest
+               (1, rest) -> step (x, y+side) rest
+               (2, rest) -> step (x+side, y+side) rest
+               (3, rest) -> step (x+side, y) rest
+               otherwise -> Debug.crash "wrong devider"
+  in point (1 `shiftLeft` (d - 1)) (1 `shiftLeft` ((d - 1) * 2)) (0, 0) n
+
+
+-- MODEL
+
 {-|
 -}
 type alias Model =
   { game : Signal.Address Events
   , order : Int
   , path : List Char
-  , dimention : Int
+  , dimention : (Int, Int)
   , freeMode : Bool
+  , play : Bool
+  , mousePosition : (Int, Int)
   }
 
 -- init : Int -> (Int,Int) ->(Int,Int) -> Model
 {-|
 -}
-init : Signal.Address Events
-     -> Int
-     -> Int -> (Model, Effects Action)
+init : Signal.Address Events -> Int -> (Int,Int)
+     -> (Model, Effects Action)
 init game order dimention =
   ({ game = game
    , order = order
    , path = computePath order
    , dimention = dimention
    , freeMode = False
+   , play = False
+   , mousePosition = (0,0)
    }, Effects.none)
 
 {-|
 -}
 type Action
-  = Resize Int
+  = Resize (Int, Int)
   | Order Int
   | FreeMode Bool
+  | MousePos (Int, Int)
+  | Tick Time
+  | PlayStart
+  | PlayStop
 
 {-|
 -}
 update : Action -> Model -> (Model, Effects Action)
 update act model =
   case act |> Debug.log "hilb_act" of
-    Resize w ->
-      ( { model | dimention = w }, Effects.none )
+    Resize dim ->
+      ( { model | dimention = dim }, Effects.none )
     Order order ->
       ( {model | order = order, path = computePath order }, Effects.none )
 
     FreeMode flag ->
+        ( {model | freeMode = flag}, Effects.none)
+
+    MousePos (ox, oy) ->
       let
-        _ = if not flag then Teremin.startOsc 1 else Teremin.stopOsc 0
+        (w, _) = model.dimention
+        side = round <| (toFloat w) / toFloat (2^model.order)
+        -- sum of offses in 32vw percentage from page top to canvas left-bottom
+        offset = round (toFloat w * 1.32)
+        (x, y) = (ox, offset - oy) |> Debug.log "xy"
+        distance = hilbertDistance model.order (x  // side, y  // side) |> Debug.log "dist"
+        _ = if model.play then Teremin.setFrequency distance (2^(model.order*2))  else ()
       in
-        ( {model | freeMode = flag}
-        , Effects.none)
+        ( { model | mousePosition = (x, y) }, Effects.none )
+
+    Tick clockTime ->
+      (model, Effects.tick Tick )
+
+    PlayStart ->
+      let
+        _ = Teremin.startOsc 1
+      in
+      ( { model | play = True }, Effects.none )
+
+    PlayStop ->
+      let
+        _ = Teremin.stopOsc 0
+      in
+      ( { model | play = False }, Effects.none )
 
 (=>) = (,)
 {-|
@@ -102,23 +171,35 @@ update act model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    side = (toFloat model.dimention) / toFloat (2^model.order)
-    offset = (toFloat model.dimention / 2)
+    (w, _) = model.dimention
+    (x, y) = model.mousePosition
+    side = (toFloat w) / toFloat (2^model.order)
+    offset = (toFloat w / 2)
     hpath = drawHilbert offset side model.path
-    draw = collage model.dimention model.dimention
+    draw = collage w w
            [ traced (solid black) (path [ (offset,offset),
                                           (offset,-offset),
                                           (-offset,-offset),
                                           (-offset,offset),
                                           (offset,offset) ])
            , traced (solid red) hpath
+           , circle side
+             |> filled blue
+             |> move ((toFloat x) - offset, (toFloat y) - offset)
            ]
+           -- ++ if model.play
+           --    then [
+           --         ]
+           --    else []
   in
   div [ style [ "height" => "100vw"
               , "width" => "100vw"
               , "border-radius" => "10vw"
               , "background-color" => "yellow"
-        ]] [ fromElement draw ]
+        ]
+      , onMouseDown address PlayStart
+      , onMouseUp address PlayStop ]
+  [ fromElement draw ]
 
 {-|
 direction (x, y) - unit vector

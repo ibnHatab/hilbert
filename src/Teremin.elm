@@ -1,7 +1,7 @@
-module Teremin (init, startOsc, stopOsc) where
+module Teremin (init, startOsc, stopOsc, setFrequency, setVolume) where
 
 {-|
-@docs init, startOsc, stopOsc
+@docs init, startOsc, stopOsc, setFrequency, setVolume
 
 -}
 
@@ -21,3 +21,11 @@ startOsc =
 stopOsc : Int -> ()
 stopOsc =
   Native.Teremin.stopOsc
+
+{-|-}
+setFrequency : Int -> Int -> ()
+setFrequency = Native.Teremin.setFrequency
+
+{-|-}
+setVolume : Int -> ()
+setVolume = Native.Teremin.setVolume

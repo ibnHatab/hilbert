@@ -12,8 +12,8 @@ Elm.Native.Teremin.make = function(localRuntime) {
     var options = {
         waveform: 'square',
         filter: 'lowpass',
-        delay: 0.500,
-        feedback: 0.4
+        delay: 0.200,
+        feedback: 0.2
     };
 
     var context = null;
@@ -84,10 +84,31 @@ Elm.Native.Teremin.make = function(localRuntime) {
         source.start(time);
     }
 
+
+    function setFrequency(val, range) {
+        // min 40Hz
+        var min = 40;
+        // max half of the sampling rate
+        var max = context.sampleRate / 2;
+        // Logarithm (base 2) to compute how many octaves fall in the range.
+        var numberOfOctaves = Math.log(max / min) / Math.LN2;
+        // Compute a multiplier from 0 to 1 based on an exponential scale.
+        var multiplier = Math.pow(2, numberOfOctaves * (((2 / range) * (range - val)) - 1.0));
+        // Get back to the frequency value between min and max.
+        nodes.filter.frequency.value = max * multiplier;
+    }
+
+    function setVolume(vol) {
+        source.frequency.value = vol;
+    }
+
+
     return localRuntime.Native.Teremin.values = {
         init: init,
         startOsc: startOsc,
         stopOsc: stopOsc,
+        setFrequency: F2(setFrequency),
+        setVolume: setVolume,
         playSound: playSound
     };
 };

@@ -3151,6 +3151,56 @@ Elm.Array.make = function (_elm) {
                               ,filter: filter
                               ,foldl: foldl
                               ,foldr: foldr};
+};Elm.Native.Bitwise = {};
+Elm.Native.Bitwise.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Bitwise = localRuntime.Native.Bitwise || {};
+	if (localRuntime.Native.Bitwise.values)
+	{
+		return localRuntime.Native.Bitwise.values;
+	}
+
+	function and(a, b) { return a & b; }
+	function or(a, b) { return a | b; }
+	function xor(a, b) { return a ^ b; }
+	function not(a) { return ~a; }
+	function sll(a, offset) { return a << offset; }
+	function sra(a, offset) { return a >> offset; }
+	function srl(a, offset) { return a >>> offset; }
+
+	return localRuntime.Native.Bitwise.values = {
+		and: F2(and),
+		or: F2(or),
+		xor: F2(xor),
+		complement: not,
+		shiftLeft: F2(sll),
+		shiftRightArithmatic: F2(sra),
+		shiftRightLogical: F2(srl)
+	};
+};
+Elm.Bitwise = Elm.Bitwise || {};
+Elm.Bitwise.make = function (_elm) {
+   "use strict";
+   _elm.Bitwise = _elm.Bitwise || {};
+   if (_elm.Bitwise.values) return _elm.Bitwise.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Native$Bitwise = Elm.Native.Bitwise.make(_elm);
+   var _op = {};
+   var shiftRightLogical = $Native$Bitwise.shiftRightLogical;
+   var shiftRight = $Native$Bitwise.shiftRightArithmatic;
+   var shiftLeft = $Native$Bitwise.shiftLeft;
+   var complement = $Native$Bitwise.complement;
+   var xor = $Native$Bitwise.xor;
+   var or = $Native$Bitwise.or;
+   var and = $Native$Bitwise.and;
+   return _elm.Bitwise.values = {_op: _op
+                                ,and: and
+                                ,or: or
+                                ,xor: xor
+                                ,complement: complement
+                                ,shiftLeft: shiftLeft
+                                ,shiftRight: shiftRight
+                                ,shiftRightLogical: shiftRightLogical};
 };Elm.Native.Char = {};
 Elm.Native.Char.make = function(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
@@ -9096,6 +9146,69 @@ Elm.Json.Decode.make = function (_elm) {
                                     ,value: value
                                     ,customDecoder: customDecoder};
 };Elm.Native = Elm.Native || {};
+Elm.Native.Mouse = {};
+Elm.Native.Mouse.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Mouse = localRuntime.Native.Mouse || {};
+	if (localRuntime.Native.Mouse.values)
+	{
+		return localRuntime.Native.Mouse.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+	var position = NS.input('Mouse.position', Utils.Tuple2(0, 0));
+
+	var isDown = NS.input('Mouse.isDown', false);
+
+	var clicks = NS.input('Mouse.clicks', Utils.Tuple0);
+
+	var node = localRuntime.isFullscreen()
+		? document
+		: localRuntime.node;
+
+	localRuntime.addListener([clicks.id], node, 'click', function click() {
+		localRuntime.notify(clicks.id, Utils.Tuple0);
+	});
+	localRuntime.addListener([isDown.id], node, 'mousedown', function down() {
+		localRuntime.notify(isDown.id, true);
+	});
+	localRuntime.addListener([isDown.id], node, 'mouseup', function up() {
+		localRuntime.notify(isDown.id, false);
+	});
+	localRuntime.addListener([position.id], node, 'mousemove', function move(e) {
+		localRuntime.notify(position.id, Utils.getXY(e));
+	});
+
+	return localRuntime.Native.Mouse.values = {
+		position: position,
+		isDown: isDown,
+		clicks: clicks
+	};
+};
+Elm.Mouse = Elm.Mouse || {};
+Elm.Mouse.make = function (_elm) {
+   "use strict";
+   _elm.Mouse = _elm.Mouse || {};
+   if (_elm.Mouse.values) return _elm.Mouse.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Native$Mouse = Elm.Native.Mouse.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var clicks = $Native$Mouse.clicks;
+   var isDown = $Native$Mouse.isDown;
+   var position = $Native$Mouse.position;
+   var x = A2($Signal.map,$Basics.fst,position);
+   var y = A2($Signal.map,$Basics.snd,position);
+   return _elm.Mouse.values = {_op: _op
+                              ,position: position
+                              ,x: x
+                              ,y: y
+                              ,isDown: isDown
+                              ,clicks: clicks};
+};Elm.Native = Elm.Native || {};
 Elm.Native.Window = {};
 Elm.Native.Window.make = function make(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
@@ -11876,10 +11989,10 @@ Elm.Game.make = function (_elm) {
    };
    var Rank = function (a) {    return {ctor: "Rank",_0: a};};
    return _elm.Game.values = {_op: _op
+                             ,maxRank: maxRank
                              ,Rank: Rank
                              ,FreeMode: FreeMode
-                             ,ShowError: ShowError
-                             ,maxRank: maxRank};
+                             ,ShowError: ShowError};
 };Elm.Dash = Elm.Dash || {};
 Elm.Dash.make = function (_elm) {
    "use strict";
@@ -11937,12 +12050,8 @@ Elm.Dash.make = function (_elm) {
            return {ctor: "_Tuple2"
                   ,_0: _U.update(model,{freeMode: freeMode})
                   ,_1: notifyFx($Game.FreeMode(freeMode))};
-         case "Resize": return {ctor: "_Tuple2"
-                               ,_0: _U.update(model,{width: _p0._0})
-                               ,_1: $Effects.none};
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
-   var Resize = function (a) {    return {ctor: "Resize",_0: a};};
    var FreeMode = {ctor: "FreeMode"};
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
@@ -11986,7 +12095,7 @@ Elm.Dash.make = function (_elm) {
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
                                                       "float",
                                                       "left")
-                                                      ,A2(_op["=>"],"width","47vw")
+                                                      ,A2(_op["=>"],"width","46vw")
                                                       ,A2(_op["=>"],"height","25vw")
                                                       ,A2(_op["=>"],"border-radius","15vw")
                                                       ,A2(_op["=>"],"border","1px solid blue")]))]),
@@ -12004,20 +12113,19 @@ Elm.Dash.make = function (_elm) {
                       ,A2($Html$Events.onClick,address,FreeMode)]),
               _U.list([]))]));
    });
-   var init = F3(function (game,rank,width) {
+   var init = F2(function (game,rank) {
       return {ctor: "_Tuple2"
-             ,_0: {game: game,rank: rank,width: width,freeMode: false}
+             ,_0: {game: game,rank: rank,freeMode: false}
              ,_1: $Effects.none};
    });
-   var Model = F4(function (a,b,c,d) {
-      return {game: a,rank: b,width: c,freeMode: d};
+   var Model = F3(function (a,b,c) {
+      return {game: a,rank: b,freeMode: c};
    });
    return _elm.Dash.values = {_op: _op
                              ,init: init
                              ,update: update
                              ,view: view
-                             ,Model: Model
-                             ,Resize: Resize};
+                             ,Model: Model};
 };Elm.LSystem = Elm.LSystem || {};
 Elm.LSystem.make = function (_elm) {
    "use strict";
@@ -12088,8 +12196,8 @@ Elm.Native.Teremin.make = function(localRuntime) {
     var options = {
         waveform: 'square',
         filter: 'lowpass',
-        delay: 0.500,
-        feedback: 0.4
+        delay: 0.200,
+        feedback: 0.2
     };
 
     var context = null;
@@ -12160,10 +12268,31 @@ Elm.Native.Teremin.make = function(localRuntime) {
         source.start(time);
     }
 
+
+    function setFrequency(val, range) {
+        // min 40Hz
+        var min = 40;
+        // max half of the sampling rate
+        var max = context.sampleRate / 2;
+        // Logarithm (base 2) to compute how many octaves fall in the range.
+        var numberOfOctaves = Math.log(max / min) / Math.LN2;
+        // Compute a multiplier from 0 to 1 based on an exponential scale.
+        var multiplier = Math.pow(2, numberOfOctaves * (((2 / range) * (range - val)) - 1.0));
+        // Get back to the frequency value between min and max.
+        nodes.filter.frequency.value = max * multiplier;
+    }
+
+    function setVolume(vol) {
+        source.frequency.value = vol;
+    }
+
+
     return localRuntime.Native.Teremin.values = {
         init: init,
         startOsc: startOsc,
         stopOsc: stopOsc,
+        setFrequency: F2(setFrequency),
+        setVolume: setVolume,
         playSound: playSound
     };
 };
@@ -12181,13 +12310,17 @@ Elm.Teremin.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var setVolume = $Native$Teremin.setVolume;
+   var setFrequency = $Native$Teremin.setFrequency;
    var stopOsc = $Native$Teremin.stopOsc;
    var startOsc = $Native$Teremin.startOsc;
    var init = $Native$Teremin.init;
    return _elm.Teremin.values = {_op: _op
                                 ,init: init
                                 ,startOsc: startOsc
-                                ,stopOsc: stopOsc};
+                                ,stopOsc: stopOsc
+                                ,setFrequency: setFrequency
+                                ,setVolume: setVolume};
 };Elm.Hilbert = Elm.Hilbert || {};
 Elm.Hilbert.make = function (_elm) {
    "use strict";
@@ -12195,6 +12328,7 @@ Elm.Hilbert.make = function (_elm) {
    if (_elm.Hilbert.values) return _elm.Hilbert.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Bitwise = Elm.Bitwise.make(_elm),
    $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Dict = Elm.Dict.make(_elm),
@@ -12203,13 +12337,15 @@ Elm.Hilbert.make = function (_elm) {
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $LSystem = Elm.LSystem.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm),
-   $Teremin = Elm.Teremin.make(_elm);
+   $Teremin = Elm.Teremin.make(_elm),
+   $Time = Elm.Time.make(_elm);
    var _op = {};
    var turttle = F3(function (side,instruction,_p0) {
       var _p1 = _p0;
@@ -12244,7 +12380,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 134,column: 3},end: {line: 138,column: 85}},
+      {start: {line: 215,column: 3},end: {line: 219,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -12260,14 +12396,21 @@ Elm.Hilbert.make = function (_elm) {
    _op["=>"] = F2(function (v0,v1) {
       return {ctor: "_Tuple2",_0: v0,_1: v1};
    });
+   var PlayStop = {ctor: "PlayStop"};
+   var PlayStart = {ctor: "PlayStart"};
    var view = F2(function (address,model) {
-      var offset = $Basics.toFloat(model.dimention) / 2;
-      var side = $Basics.toFloat(model.dimention) / $Basics.toFloat(Math.pow(2,
+      var _p7 = model.mousePosition;
+      var x = _p7._0;
+      var y = _p7._1;
+      var _p8 = model.dimention;
+      var w = _p8._0;
+      var side = $Basics.toFloat(w) / $Basics.toFloat(Math.pow(2,
       model.order));
+      var offset = $Basics.toFloat(w) / 2;
       var hpath = A3(drawHilbert,offset,side,model.path);
       var draw = A3($Graphics$Collage.collage,
-      model.dimention,
-      model.dimention,
+      w,
+      w,
       _U.list([A2($Graphics$Collage.traced,
               $Graphics$Collage.solid($Color.black),
               $Graphics$Collage.path(_U.list([{ctor: "_Tuple2"
@@ -12279,23 +12422,124 @@ Elm.Hilbert.make = function (_elm) {
                                              ,{ctor: "_Tuple2",_0: offset,_1: offset}])))
               ,A2($Graphics$Collage.traced,
               $Graphics$Collage.solid($Color.red),
-              hpath)]));
+              hpath)
+              ,A2($Graphics$Collage.move,
+              {ctor: "_Tuple2"
+              ,_0: $Basics.toFloat(x) - offset
+              ,_1: $Basics.toFloat(y) - offset},
+              A2($Graphics$Collage.filled,
+              $Color.blue,
+              $Graphics$Collage.circle(side)))]));
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
                                               "height",
                                               "100vw")
                                               ,A2(_op["=>"],"width","100vw")
                                               ,A2(_op["=>"],"border-radius","10vw")
-                                              ,A2(_op["=>"],"background-color","yellow")]))]),
+                                              ,A2(_op["=>"],"background-color","yellow")]))
+              ,A2($Html$Events.onMouseDown,address,PlayStart)
+              ,A2($Html$Events.onMouseUp,address,PlayStop)]),
       _U.list([$Html.fromElement(draw)]));
    });
+   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+   var MousePos = function (a) {
+      return {ctor: "MousePos",_0: a};
+   };
    var FreeMode = function (a) {
       return {ctor: "FreeMode",_0: a};
    };
    var Order = function (a) {    return {ctor: "Order",_0: a};};
    var Resize = function (a) {    return {ctor: "Resize",_0: a};};
-   var Model = F5(function (a,b,c,d,e) {
-      return {game: a,order: b,path: c,dimention: d,freeMode: e};
+   var Model = F7(function (a,b,c,d,e,f,g) {
+      return {game: a
+             ,order: b
+             ,path: c
+             ,dimention: d
+             ,freeMode: e
+             ,play: f
+             ,mousePosition: g};
+   });
+   var hilbertPoint = F2(function (d,n) {
+      var point = F4(function (side,area,_p9,n) {
+         var _p10 = _p9;
+         var _p14 = _p10._1;
+         var _p13 = _p10._0;
+         if (_U.eq(side,0)) return {ctor: "_Tuple2",_0: _p13,_1: _p14};
+         else {
+               var divMod = F2(function (x,y) {
+                  return {ctor: "_Tuple2"
+                         ,_0: x / y | 0
+                         ,_1: A2($Basics._op["%"],x,y)};
+               });
+               var step = A2(point,
+               A2($Bitwise.shiftRight,side,1),
+               A2($Bitwise.shiftRight,area,2));
+               var _p11 = A2(divMod,n,area);
+               _v3_4: do {
+                  if (_p11.ctor === "_Tuple2") {
+                        switch (_p11._0)
+                        {case 0: return A2(step,
+                             {ctor: "_Tuple2",_0: _p13,_1: _p14},
+                             _p11._1);
+                           case 1: return A2(step,
+                             {ctor: "_Tuple2",_0: _p13,_1: _p14 + side},
+                             _p11._1);
+                           case 2: return A2(step,
+                             {ctor: "_Tuple2",_0: _p13 + side,_1: _p14 + side},
+                             _p11._1);
+                           case 3: return A2(step,
+                             {ctor: "_Tuple2",_0: _p13 + side,_1: _p14},
+                             _p11._1);
+                           default: break _v3_4;}
+                     } else {
+                        break _v3_4;
+                     }
+               } while (false);
+               return _U.crashCase("Hilbert",
+               {start: {line: 79,column: 14},end: {line: 84,column: 56}},
+               _p11)("wrong devider");
+            }
+      });
+      return A4(point,
+      A2($Bitwise.shiftLeft,1,d - 1),
+      A2($Bitwise.shiftLeft,1,(d - 1) * 2),
+      {ctor: "_Tuple2",_0: 0,_1: 0},
+      n);
+   });
+   var hilbertDistance = F2(function (d,_p15) {
+      var _p16 = _p15;
+      var dist = F5(function (side,area,result,x,y) {
+         if (_U.eq(side,0)) return result; else {
+               var step = A2(dist,
+               A2($Bitwise.shiftRight,side,1),
+               A2($Bitwise.shiftRight,area,2));
+               var _p17 = {ctor: "_Tuple2"
+                          ,_0: A2($Basics.compare,x,side)
+                          ,_1: A2($Basics.compare,y,side)};
+               if (_p17._0.ctor === "LT") {
+                     if (_p17._1.ctor === "LT") {
+                           return A3(step,result,y,x);
+                        } else {
+                           return A3(step,result + area,x,y - side);
+                        }
+                  } else {
+                     if (_p17._1.ctor === "LT") {
+                           return A3(step,
+                           result + area * 3,
+                           side - y - 1,
+                           side * 2 - x - 1);
+                        } else {
+                           return A3(step,result + area * 2,x - side,y - side);
+                        }
+                  }
+            }
+      });
+      return A5(dist,
+      A2($Bitwise.shiftLeft,1,d - 1),
+      A2($Bitwise.shiftLeft,1,(d - 1) * 2),
+      0,
+      _p16._0,
+      _p16._1);
    });
    var hilbert = {axiom: _U.list([_U.chr("A")])
                  ,rules: $Dict.fromList(_U.list([{ctor: "_Tuple2"
@@ -12319,23 +12563,56 @@ Elm.Hilbert.make = function (_elm) {
                   ,order: order
                   ,path: computePath(order)
                   ,dimention: dimention
-                  ,freeMode: false}
+                  ,freeMode: false
+                  ,play: false
+                  ,mousePosition: {ctor: "_Tuple2",_0: 0,_1: 0}}
              ,_1: $Effects.none};
    });
    var update = F2(function (act,model) {
-      var _p7 = A2($Debug.log,"hilb_act",act);
-      switch (_p7.ctor)
+      var _p18 = A2($Debug.log,"hilb_act",act);
+      switch (_p18.ctor)
       {case "Resize": return {ctor: "_Tuple2"
-                             ,_0: _U.update(model,{dimention: _p7._0})
+                             ,_0: _U.update(model,{dimention: _p18._0})
                              ,_1: $Effects.none};
-         case "Order": var _p8 = _p7._0;
+         case "Order": var _p19 = _p18._0;
            return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{order: _p8,path: computePath(_p8)})
+                  ,_0: _U.update(model,{order: _p19,path: computePath(_p19)})
                   ,_1: $Effects.none};
-         default: var _p10 = _p7._0;
-           var _p9 = $Basics.not(_p10) ? $Teremin.startOsc(1) : $Teremin.stopOsc(0);
+         case "FreeMode": return {ctor: "_Tuple2"
+                                 ,_0: _U.update(model,{freeMode: _p18._0})
+                                 ,_1: $Effects.none};
+         case "MousePos": var _p20 = model.dimention;
+           var w = _p20._0;
+           var side = $Basics.round($Basics.toFloat(w) / $Basics.toFloat(Math.pow(2,
+           model.order)));
+           var offset = $Basics.round($Basics.toFloat(w) * 1.32);
+           var _p21 = A2($Debug.log,
+           "xy",
+           {ctor: "_Tuple2",_0: _p18._0._0,_1: offset - _p18._0._1});
+           var x = _p21._0;
+           var y = _p21._1;
+           var distance = A2($Debug.log,
+           "dist",
+           A2(hilbertDistance,
+           model.order,
+           {ctor: "_Tuple2",_0: x / side | 0,_1: y / side | 0}));
+           var _p22 = model.play ? A2($Teremin.setFrequency,
+           distance,
+           Math.pow(2,model.order * 2)) : {ctor: "_Tuple0"};
            return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{freeMode: _p10})
+                  ,_0: _U.update(model,
+                  {mousePosition: {ctor: "_Tuple2",_0: x,_1: y}})
+                  ,_1: $Effects.none};
+         case "Tick": return {ctor: "_Tuple2"
+                             ,_0: model
+                             ,_1: $Effects.tick(Tick)};
+         case "PlayStart": var _p23 = $Teremin.startOsc(1);
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{play: true})
+                  ,_1: $Effects.none};
+         default: var _p24 = $Teremin.stopOsc(0);
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{play: false})
                   ,_1: $Effects.none};}
    });
    return _elm.Hilbert.values = {_op: _op
@@ -12345,7 +12622,8 @@ Elm.Hilbert.make = function (_elm) {
                                 ,Model: Model
                                 ,Order: Order
                                 ,Resize: Resize
-                                ,FreeMode: FreeMode};
+                                ,FreeMode: FreeMode
+                                ,MousePos: MousePos};
 };Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
    "use strict";
@@ -12362,6 +12640,7 @@ Elm.Main.make = function (_elm) {
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Mouse = Elm.Mouse.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
@@ -12377,6 +12656,21 @@ Elm.Main.make = function (_elm) {
    var Hilbert = function (a) {
       return {ctor: "Hilbert",_0: a};
    };
+   var mousePosition = A2($Signal.map,
+   function (p) {
+      return Hilbert($Hilbert.MousePos(p));
+   },
+   A2($Signal.map,
+   $Basics.fst,
+   A3($Signal.filter,
+   $Basics.snd,
+   {ctor: "_Tuple2",_0: {ctor: "_Tuple2",_0: 0,_1: 0},_1: false},
+   A3($Signal.map2,
+   F2(function (v0,v1) {
+      return {ctor: "_Tuple2",_0: v0,_1: v1};
+   }),
+   $Mouse.position,
+   $Mouse.isDown))));
    var Dash = function (a) {    return {ctor: "Dash",_0: a};};
    var update = F2(function (message,model) {
       update: while (true) {
@@ -12385,49 +12679,44 @@ Elm.Main.make = function (_elm) {
          {case "NoOp": return {ctor: "_Tuple2"
                               ,_0: model
                               ,_1: $Effects.none};
-            case "WindowResize": var _p3 = _p0._0._0;
-              var _p1 = A2($Hilbert.update,
-              $Hilbert.Resize(_p3),
+            case "WindowResize": var _p1 = A2($Hilbert.update,
+              $Hilbert.Resize(_p0._0),
               model.hilbert);
               var hilbert = _p1._0;
               var hilbertFx = _p1._1;
-              var _p2 = A2($Dash.update,$Dash.Resize(_p3),model.dash);
-              var dash = _p2._0;
-              var dashFx = _p2._1;
               return {ctor: "_Tuple2"
-                     ,_0: _U.update(model,{dash: dash,hilbert: hilbert})
-                     ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
-                                                 ,A2($Effects.map,Hilbert,hilbertFx)]))};
-            case "Game": var _p4 = _p0._0;
-              switch (_p4.ctor)
-              {case "Rank": var _v2 = Hilbert($Hilbert.Order(_p4._0)),
+                     ,_0: _U.update(model,{hilbert: hilbert})
+                     ,_1: A2($Effects.map,Hilbert,hilbertFx)};
+            case "Game": var _p2 = _p0._0;
+              switch (_p2.ctor)
+              {case "Rank": var _v2 = Hilbert($Hilbert.Order(_p2._0)),
                    _v3 = model;
                    message = _v2;
                    model = _v3;
                    continue update;
                  case "ShowError": return {ctor: "_Tuple2"
-                                          ,_0: _U.update(model,{statusString: $Maybe.Just(_p4._0)})
+                                          ,_0: _U.update(model,{statusString: $Maybe.Just(_p2._0)})
                                           ,_1: $Effects.none};
-                 default: var _p6 = _p4._0;
-                   var _p5 = A2($Hilbert.update,
-                   $Hilbert.FreeMode(_p6),
+                 default: var _p4 = _p2._0;
+                   var _p3 = A2($Hilbert.update,
+                   $Hilbert.FreeMode(_p4),
                    model.hilbert);
-                   var hilbert = _p5._0;
-                   var hilbertFx = _p5._1;
+                   var hilbert = _p3._0;
+                   var hilbertFx = _p3._1;
                    return {ctor: "_Tuple2"
                           ,_0: _U.update(model,
                           {hilbert: hilbert
-                          ,statusString: _p6 ? $Maybe.Just("Free drawing mode") : $Maybe.Nothing})
+                          ,statusString: _p4 ? $Maybe.Just("Free drawing mode") : $Maybe.Nothing})
                           ,_1: A2($Effects.map,Hilbert,hilbertFx)};}
-            case "Dash": var _p7 = A2($Dash.update,_p0._0,model.dash);
-              var dash = _p7._0;
-              var dashFx = _p7._1;
+            case "Dash": var _p5 = A2($Dash.update,_p0._0,model.dash);
+              var dash = _p5._0;
+              var dashFx = _p5._1;
               return {ctor: "_Tuple2"
                      ,_0: _U.update(model,{dash: dash})
                      ,_1: A2($Effects.map,Dash,dashFx)};
-            default: var _p8 = A2($Hilbert.update,_p0._0,model.hilbert);
-              var hilbert = _p8._0;
-              var hilbertFx = _p8._1;
+            default: var _p6 = A2($Hilbert.update,_p0._0,model.hilbert);
+              var hilbert = _p6._0;
+              var hilbertFx = _p6._1;
               return {ctor: "_Tuple2"
                      ,_0: _U.update(model,{hilbert: hilbert})
                      ,_1: A2($Effects.map,Hilbert,hilbertFx)};}
@@ -12438,9 +12727,14 @@ Elm.Main.make = function (_elm) {
       _U.list([]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-              "height",
-              "2vw")]))]),
-              _U.list([]))
+                                                      "height",
+                                                      "5vw")
+                                                      ,A2(_op["=>"],"font-size","4vw")
+                                                      ,A2(_op["=>"],"font-family","monospace")
+                                                      ,A2(_op["=>"],"text-align","right")]))]),
+              _U.list([$Html.text(A2($Maybe.withDefault,
+              "",
+              model.statusString))]))
               ,A2($Dash.view,A2($Signal.forwardTo,address,Dash),model.dash)
               ,A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
@@ -12454,18 +12748,7 @@ Elm.Main.make = function (_elm) {
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
               "height",
               "5vw")]))]),
-              _U.list([]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                                      "height",
-                                                      "7vw")
-                                                      ,A2(_op["=>"],"border","1px solid black")
-                                                      ,A2(_op["=>"],"font-size","6vw")
-                                                      ,A2(_op["=>"],"font-family","monospace")
-                                                      ,A2(_op["=>"],"text-align","left")]))]),
-              _U.list([$Html.text(A2($Maybe.withDefault,
-              ">>",
-              model.statusString))]))]));
+              _U.list([]))]));
    });
    var NoOp = {ctor: "NoOp"};
    var sendInitial = $Effects.task(A2($Task.map,
@@ -12486,17 +12769,15 @@ Elm.Main.make = function (_elm) {
    });
    var init = function () {
       var game = A2($Signal.forwardTo,actionsMb.address,Game);
-      var _p9 = {ctor: "_Tuple2",_0: 400,_1: 600};
-      var width = _p9._0;
-      var height = _p9._1;
+      var dim = {ctor: "_Tuple2",_0: 400,_1: 600};
       var order = 4;
-      var _p10 = A3($Dash.init,game,order,width);
-      var dash = _p10._0;
-      var dashFx = _p10._1;
-      var _p11 = A3($Hilbert.init,game,order,width);
-      var hilbert = _p11._0;
-      var hilbertFx = _p11._1;
-      var _p12 = $Teremin.init(0);
+      var _p7 = A2($Dash.init,game,order);
+      var dash = _p7._0;
+      var dashFx = _p7._1;
+      var _p8 = A3($Hilbert.init,game,order,dim);
+      var hilbert = _p8._0;
+      var hilbertFx = _p8._1;
+      var _p9 = $Teremin.init(0);
       return {ctor: "_Tuple2"
              ,_0: A3(Model,dash,hilbert,$Maybe.Nothing)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
@@ -12506,7 +12787,10 @@ Elm.Main.make = function (_elm) {
    var app = $StartApp.start({init: init
                              ,update: update
                              ,view: view
-                             ,inputs: _U.list([firstResize,windowResize,actionsMb.signal])});
+                             ,inputs: _U.list([firstResize
+                                              ,windowResize
+                                              ,actionsMb.signal
+                                              ,mousePosition])});
    var main = app.html;
    var runner = Elm.Native.Task.make(_elm).performSignal("runner",
    app.tasks);
@@ -12525,6 +12809,7 @@ Elm.Main.make = function (_elm) {
                              ,appStartMb: appStartMb
                              ,sendInitial: sendInitial
                              ,actionsMb: actionsMb
+                             ,mousePosition: mousePosition
                              ,app: app
                              ,main: main};
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script></body></html>

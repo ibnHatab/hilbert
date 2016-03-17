@@ -10,6 +10,7 @@ import Html.Attributes exposing (style)
 import StartApp
 import Window
 import Task exposing (Task)
+import Mouse
 
 import Hilbert exposing (..) -- (init, update, view, Action)
 import Dash exposing (init, update, view)
@@ -31,12 +32,12 @@ init =
   let
     _ = Teremin.init(0)
     order = 4
-    (width, height) = (400, 600)
+    dim = (400, 600)
 
     game = Signal.forwardTo actionsMb.address Game
 
-    (dash, dashFx) = Dash.init game order width
-    (hilbert, hilbertFx) = Hilbert.init game order width
+    (dash, dashFx) = Dash.init game order
+    (hilbert, hilbertFx) = Hilbert.init game order dim
   in
     ( Model dash hilbert Nothing
     , Effects.batch [ Effects.map Dash dashFx,
@@ -60,14 +61,10 @@ update message model =
   case message |> Debug.log "m_act" of
     NoOp -> (model, Effects.none)
 
-    WindowResize (w, h) ->
+    WindowResize dim ->
       let
-        (dash, dashFx) = Dash.update (Dash.Resize w) model.dash
-        (hilbert, hilbertFx) = Hilbert.update (Hilbert.Resize w) model.hilbert
-      in ({model | dash = dash, hilbert = hilbert},
-          Effects.batch [ Effects.map Dash dashFx
-                        , Effects.map Hilbert hilbertFx]
-         )
+        (hilbert, hilbertFx) = Hilbert.update (Hilbert.Resize dim) model.hilbert
+      in ({model | hilbert = hilbert}, Effects.map Hilbert hilbertFx)
 
     Game act ->
       case act of
@@ -101,19 +98,19 @@ update message model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   div []
-      [ div [ style [ "height" => "2vw"]] []
+        [ -- div [ style [ "height" => "2vw"]] []
+          div [ style [ "height" => "5vw"
+                      , "font-size" => "4vw"
+                      , "font-family" => "monospace"
+                      , "text-align" => "right"
+                      ]]
+              [text (Maybe.withDefault "" model.statusString)]
       , Dash.view (Signal.forwardTo address Dash) model.dash
       , div [ style [ "height" => "2vw"]] []
       , Hilbert.view (Signal.forwardTo address Hilbert) model.hilbert
       , div [ style [ "height" => "5vw"]] []
       -- status line
-      , div [ style [ "height" => "7vw"
-                    , "border" => "1px solid black"
-                    , "font-size" => "6vw"
-                    , "font-family" => "monospace"
-                    , "text-align" => "left"
-                    ]]
-              [text (Maybe.withDefault ">>" model.statusString)]
+
       ]
 
 -- Tasks and signals
@@ -127,13 +124,23 @@ sendInitial = Signal.send appStartMb.address () |> Task.map (always NoOp) |> Eff
 actionsMb : Signal.Mailbox Action
 actionsMb = Signal.mailbox NoOp
 
+mousePosition =
+  Signal.map2 (,) Mouse.position Mouse.isDown
+    |> Signal.filter snd ((0, 0), False)
+    |> Signal.map fst
+    |> Signal.map (\p -> (Hilbert (Hilbert.MousePos p)))
+
+
 -- APP
 app =
   StartApp.start
              { init = init
              , update = update
              , view = view
-             , inputs = [firstResize, windowResize, actionsMb.signal]
+             , inputs = [ firstResize
+                        , windowResize
+                        , actionsMb.signal
+                        , mousePosition]
              }
 {-|
 -}
