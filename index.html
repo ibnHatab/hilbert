@@ -11933,17 +11933,17 @@ Elm.Dash.make = function (_elm) {
                                             ,_1: notifyFx($Game.Rank(model.rank - 1))} : {ctor: "_Tuple2"
                                                                                          ,_0: model
                                                                                          ,_1: notifyFx($Game.ShowError("Min rank!"))};
-         case "Bang": var bang = $Basics.not(model.bang);
+         case "FreeMode": var freeMode = $Basics.not(model.freeMode);
            return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{bang: bang})
-                  ,_1: notifyFx($Game.FreeMode(bang))};
+                  ,_0: _U.update(model,{freeMode: freeMode})
+                  ,_1: notifyFx($Game.FreeMode(freeMode))};
          case "Resize": return {ctor: "_Tuple2"
                                ,_0: _U.update(model,{width: _p0._0})
                                ,_1: $Effects.none};
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
    var Resize = function (a) {    return {ctor: "Resize",_0: a};};
-   var Bang = {ctor: "Bang"};
+   var FreeMode = {ctor: "FreeMode"};
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
    var view = F2(function (address,model) {
@@ -12000,17 +12000,17 @@ Elm.Dash.make = function (_elm) {
                                                       ,A2(_op["=>"],"border-radius","15vw")
                                                       ,A2(_op["=>"],
                                                       "background-color",
-                                                      model.bang ? "red" : "green")]))
-                      ,A2($Html$Events.onClick,address,Bang)]),
+                                                      model.freeMode ? "green" : "red")]))
+                      ,A2($Html$Events.onClick,address,FreeMode)]),
               _U.list([]))]));
    });
    var init = F3(function (game,rank,width) {
       return {ctor: "_Tuple2"
-             ,_0: {game: game,rank: rank,width: width,bang: true}
+             ,_0: {game: game,rank: rank,width: width,freeMode: false}
              ,_1: $Effects.none};
    });
    var Model = F4(function (a,b,c,d) {
-      return {game: a,rank: b,width: c,bang: d};
+      return {game: a,rank: b,width: c,freeMode: d};
    });
    return _elm.Dash.values = {_op: _op
                              ,init: init
@@ -12128,7 +12128,7 @@ Elm.Native.Teremin.make = function(localRuntime) {
     }
 
     function init(args) {
-        console.error("Initialize teremin." + args);
+        console.log("Initialize teremin." + args);
 
         try {
             window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -12140,17 +12140,17 @@ Elm.Native.Teremin.make = function(localRuntime) {
 
         createWebAudioNodes();
         routeSounds();
+
+        source.start(0);
     }
 
 
-    function startOsc(time) {
-        source.start(time);
-        nodes.oscVolume.gain.value = 1;
+    function startOsc(gain) {
+        nodes.oscVolume.gain.value = gain;
     }
 
-    function stopOsc(time) {
-        nodes.oscVolume.gain.value = 0;
-        source.stop(time);
+    function stopOsc(gain) {
+        nodes.oscVolume.gain.value = gain;
     }
 
     function playSound(buffer, time) {
@@ -12289,11 +12289,13 @@ Elm.Hilbert.make = function (_elm) {
                                               ,A2(_op["=>"],"background-color","yellow")]))]),
       _U.list([$Html.fromElement(draw)]));
    });
-   var GameOn = function (a) {    return {ctor: "GameOn",_0: a};};
+   var FreeMode = function (a) {
+      return {ctor: "FreeMode",_0: a};
+   };
    var Order = function (a) {    return {ctor: "Order",_0: a};};
    var Resize = function (a) {    return {ctor: "Resize",_0: a};};
    var Model = F5(function (a,b,c,d,e) {
-      return {game: a,order: b,path: c,dimention: d,gameOn: e};
+      return {game: a,order: b,path: c,dimention: d,freeMode: e};
    });
    var hilbert = {axiom: _U.list([_U.chr("A")])
                  ,rules: $Dict.fromList(_U.list([{ctor: "_Tuple2"
@@ -12317,7 +12319,7 @@ Elm.Hilbert.make = function (_elm) {
                   ,order: order
                   ,path: computePath(order)
                   ,dimention: dimention
-                  ,gameOn: false}
+                  ,freeMode: false}
              ,_1: $Effects.none};
    });
    var update = F2(function (act,model) {
@@ -12331,9 +12333,9 @@ Elm.Hilbert.make = function (_elm) {
                   ,_0: _U.update(model,{order: _p8,path: computePath(_p8)})
                   ,_1: $Effects.none};
          default: var _p10 = _p7._0;
-           var _p9 = $Basics.not(_p10) ? $Teremin.startOsc(0) : $Teremin.stopOsc(0);
+           var _p9 = $Basics.not(_p10) ? $Teremin.startOsc(1) : $Teremin.stopOsc(0);
            return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{gameOn: _p10})
+                  ,_0: _U.update(model,{freeMode: _p10})
                   ,_1: $Effects.none};}
    });
    return _elm.Hilbert.values = {_op: _op
@@ -12343,7 +12345,7 @@ Elm.Hilbert.make = function (_elm) {
                                 ,Model: Model
                                 ,Order: Order
                                 ,Resize: Resize
-                                ,GameOn: GameOn};
+                                ,FreeMode: FreeMode};
 };Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
    "use strict";
@@ -12367,6 +12369,7 @@ Elm.Main.make = function (_elm) {
    $Teremin = Elm.Teremin.make(_elm),
    $Window = Elm.Window.make(_elm);
    var _op = {};
+   var appStartMb = $Signal.mailbox({ctor: "_Tuple0"});
    _op["=>"] = F2(function (v0,v1) {
       return {ctor: "_Tuple2",_0: v0,_1: v1};
    });
@@ -12407,7 +12410,7 @@ Elm.Main.make = function (_elm) {
                                           ,_1: $Effects.none};
                  default: var _p6 = _p4._0;
                    var _p5 = A2($Hilbert.update,
-                   $Hilbert.GameOn(_p6),
+                   $Hilbert.FreeMode(_p6),
                    model.hilbert);
                    var hilbert = _p5._0;
                    var hilbertFx = _p5._1;
@@ -12465,6 +12468,9 @@ Elm.Main.make = function (_elm) {
               model.statusString))]))]));
    });
    var NoOp = {ctor: "NoOp"};
+   var sendInitial = $Effects.task(A2($Task.map,
+   $Basics.always(NoOp),
+   A2($Signal.send,appStartMb.address,{ctor: "_Tuple0"})));
    var actionsMb = $Signal.mailbox(NoOp);
    var WindowResize = function (a) {
       return {ctor: "WindowResize",_0: a};
@@ -12472,6 +12478,9 @@ Elm.Main.make = function (_elm) {
    var windowResize = A2($Signal.map,
    WindowResize,
    $Window.dimensions);
+   var firstResize = A2($Signal.sampleOn,
+   appStartMb.signal,
+   windowResize);
    var Model = F3(function (a,b,c) {
       return {dash: a,hilbert: b,statusString: c};
    });
@@ -12491,12 +12500,13 @@ Elm.Main.make = function (_elm) {
       return {ctor: "_Tuple2"
              ,_0: A3(Model,dash,hilbert,$Maybe.Nothing)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
-                                         ,A2($Effects.map,Hilbert,hilbertFx)]))};
+                                         ,A2($Effects.map,Hilbert,hilbertFx)
+                                         ,sendInitial]))};
    }();
    var app = $StartApp.start({init: init
                              ,update: update
                              ,view: view
-                             ,inputs: _U.list([windowResize,actionsMb.signal])});
+                             ,inputs: _U.list([firstResize,windowResize,actionsMb.signal])});
    var main = app.html;
    var runner = Elm.Native.Task.make(_elm).performSignal("runner",
    app.tasks);
@@ -12511,6 +12521,9 @@ Elm.Main.make = function (_elm) {
                              ,update: update
                              ,view: view
                              ,windowResize: windowResize
+                             ,firstResize: firstResize
+                             ,appStartMb: appStartMb
+                             ,sendInitial: sendInitial
                              ,actionsMb: actionsMb
                              ,app: app
                              ,main: main};

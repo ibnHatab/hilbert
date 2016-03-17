@@ -52,7 +52,7 @@ Elm.Native.Teremin.make = function(localRuntime) {
     }
 
     function init(args) {
-        console.error("Initialize teremin." + args);
+        console.log("Initialize teremin." + args);
 
         try {
             window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -64,17 +64,17 @@ Elm.Native.Teremin.make = function(localRuntime) {
 
         createWebAudioNodes();
         routeSounds();
+
+        source.start(0);
     }
 
 
-    function startOsc(time) {
-        source.start(time);
-        nodes.oscVolume.gain.value = 1;
+    function startOsc(gain) {
+        nodes.oscVolume.gain.value = gain;
     }
 
-    function stopOsc(time) {
-        nodes.oscVolume.gain.value = 0;
-        source.stop(time);
+    function stopOsc(gain) {
+        nodes.oscVolume.gain.value = gain;
     }
 
     function playSound(buffer, time) {

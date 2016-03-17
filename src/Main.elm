@@ -39,7 +39,10 @@ init =
     (hilbert, hilbertFx) = Hilbert.init game order width
   in
     ( Model dash hilbert Nothing
-    , Effects.batch [ Effects.map Dash dashFx, Effects.map Hilbert hilbertFx]
+    , Effects.batch [ Effects.map Dash dashFx,
+                      Effects.map Hilbert hilbertFx,
+                      sendInitial
+                    ]
     )
 
 -- UPDATE
@@ -62,7 +65,8 @@ update message model =
         (dash, dashFx) = Dash.update (Dash.Resize w) model.dash
         (hilbert, hilbertFx) = Hilbert.update (Hilbert.Resize w) model.hilbert
       in ({model | dash = dash, hilbert = hilbert},
-          Effects.batch [ Effects.map Dash dashFx, Effects.map Hilbert hilbertFx]
+          Effects.batch [ Effects.map Dash dashFx
+                        , Effects.map Hilbert hilbertFx]
          )
 
     Game act ->
@@ -75,7 +79,7 @@ update message model =
 
         Game.FreeMode flag ->
           let
-            (hilbert, hilbertFx) = Hilbert.update (Hilbert.GameOn flag) model.hilbert
+            (hilbert, hilbertFx) = Hilbert.update (Hilbert.FreeMode flag) model.hilbert
           in
             ( { model | hilbert = hilbert
               , statusString = if flag then Just "Free drawing mode" else Nothing}
@@ -112,30 +116,29 @@ view address model =
               [text (Maybe.withDefault ">>" model.statusString)]
       ]
 
--- APP
-windowResize =
-  Signal.map WindowResize Window.dimensions
+-- Tasks and signals
+windowResize = Signal.map WindowResize Window.dimensions
+firstResize = Signal.sampleOn appStartMb.signal windowResize
 
+appStartMb = Signal.mailbox ()
+sendInitial = Signal.send appStartMb.address () |> Task.map (always NoOp) |> Effects.task
+
+-- Game event mailbox
 actionsMb : Signal.Mailbox Action
 actionsMb = Signal.mailbox NoOp
 
--- changeOrder : Signal.Address Int
--- changeOrder =
---   Signal.forwardTo actions.address Game
-
+-- APP
 app =
   StartApp.start
              { init = init
              , update = update
              , view = view
-             , inputs = [windowResize, actionsMb.signal]
+             , inputs = [firstResize, windowResize, actionsMb.signal]
              }
 {-|
 -}
 main : Signal Html
-main =
-  app.html
+main = app.html
 
 port runner : Signal (Task.Task Never ())
-port runner =
-  app.tasks
+port runner = app.tasks

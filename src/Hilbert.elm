@@ -1,4 +1,4 @@
-module Hilbert (Model, init, Action(Order, Resize, GameOn), update, view) where
+module Hilbert (Model, init, Action(Order, Resize, FreeMode), update, view) where
 
 {-|
 
@@ -55,7 +55,7 @@ type alias Model =
   , order : Int
   , path : List Char
   , dimention : Int
-  , gameOn : Bool
+  , freeMode : Bool
   }
 
 -- init : Int -> (Int,Int) ->(Int,Int) -> Model
@@ -69,7 +69,7 @@ init game order dimention =
    , order = order
    , path = computePath order
    , dimention = dimention
-   , gameOn = False
+   , freeMode = False
    }, Effects.none)
 
 {-|
@@ -77,7 +77,7 @@ init game order dimention =
 type Action
   = Resize Int
   | Order Int
-  | GameOn Bool
+  | FreeMode Bool
 
 {-|
 -}
@@ -89,11 +89,11 @@ update act model =
     Order order ->
       ( {model | order = order, path = computePath order }, Effects.none )
 
-    GameOn flag ->
+    FreeMode flag ->
       let
-        _ = if not flag then Teremin.startOsc 0 else Teremin.stopOsc 0
+        _ = if not flag then Teremin.startOsc 1 else Teremin.stopOsc 0
       in
-        ( {model | gameOn = flag}
+        ( {model | freeMode = flag}
         , Effects.none)
 
 (=>) = (,)

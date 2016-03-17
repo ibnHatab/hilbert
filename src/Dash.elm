@@ -19,7 +19,7 @@ type alias Model =
   { game : Signal.Address Game.Events
   , rank : Int
   , width : Int
-  , bang : Bool
+  , freeMode : Bool
   }
 
 
@@ -32,7 +32,7 @@ init game rank width =
   ( { game = game
     , rank = rank
     , width = width
-    , bang = True
+    , freeMode = False
     }
   , Effects.none
   )
@@ -42,7 +42,7 @@ init game rank width =
 {-|-}
 type Action = Increment
             | Decrement
-            | Bang
+            | FreeMode
             | Resize Int
             | TaskDone ()
 
@@ -66,9 +66,9 @@ update action model =
              , notifyFx (Game.Rank (model.rank - 1)))
         else (model, notifyFx (Game.ShowError "Min rank!"))
 
-      Bang -> let bang = not model.bang
-              in ( { model | bang = bang }
-                 , notifyFx (Game.FreeMode bang))
+      FreeMode -> let freeMode = not model.freeMode
+              in ( { model | freeMode = freeMode }
+                 , notifyFx (Game.FreeMode freeMode))
 
       Resize width ->
         ( { model | width = width }, Effects.none)
@@ -115,11 +115,11 @@ view address model =
                    , "width" =>  "25vw"
                    , "height" =>  "25vw"
                    , "border-radius" =>  "15vw"
-                   , "background-color" => if model.bang
-                                           then "red"
-                                           else "green"
+                   , "background-color" => if model.freeMode
+                                           then "green"
+                                           else "red"
                    ]
-           , onClick address Bang
+           , onClick address FreeMode
            ] [  ]
      ]
 
