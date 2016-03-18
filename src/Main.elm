@@ -31,12 +31,12 @@ init : (Model, Effects Action)
 init =
   let
     _ = Teremin.init(0)
-    order = 4
+    order = 3
     dim = (400, 600)
 
     game = Signal.forwardTo actionsMb.address Game
 
-    (dash, dashFx) = Dash.init game order
+    (dash, dashFx) = Dash.init game order dim
     (hilbert, hilbertFx) = Hilbert.init game order dim
   in
     ( Model dash hilbert Nothing
@@ -63,8 +63,11 @@ update message model =
 
     WindowResize dim ->
       let
+        (dash, dashFx) = Dash.update (Dash.Resize dim) model.dash
         (hilbert, hilbertFx) = Hilbert.update (Hilbert.Resize dim) model.hilbert
-      in ({model | hilbert = hilbert}, Effects.map Hilbert hilbertFx)
+      in ( {model | dash = dash, hilbert = hilbert}
+         , Effects.batch [ Effects.map Dash dashFx,
+                           Effects.map Hilbert hilbertFx])
 
     Game act ->
       case act of
@@ -98,19 +101,17 @@ update message model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   div []
-        [ -- div [ style [ "height" => "2vw"]] []
-          div [ style [ "height" => "5vw"
+        [ div [ style [ "height" => "5vw"
                       , "font-size" => "4vw"
                       , "font-family" => "monospace"
                       , "text-align" => "right"
                       ]]
-              [text (Maybe.withDefault "" model.statusString)]
-      , Dash.view (Signal.forwardTo address Dash) model.dash
-      , div [ style [ "height" => "2vw"]] []
-      , Hilbert.view (Signal.forwardTo address Hilbert) model.hilbert
-      , div [ style [ "height" => "5vw"]] []
-      -- status line
-
+          [text (Maybe.withDefault "" model.statusString)]
+        , Dash.view (Signal.forwardTo address Dash) model.dash
+        , div [ style [ "height" => "2vw"]] []
+        , Hilbert.view (Signal.forwardTo address Hilbert) model.hilbert
+        , div [ style [ "height" => "5vw"]] []
+        -- status line
       ]
 
 -- Tasks and signals

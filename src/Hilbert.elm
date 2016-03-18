@@ -4,7 +4,6 @@ module Hilbert (Model, init, Action(Order, Resize, FreeMode, MousePos), update, 
 
 @docs Model, init, Action, update, view
 
-
 -}
 
 import Color exposing (..)
@@ -176,21 +175,21 @@ view address model =
     side = (toFloat w) / toFloat (2^model.order)
     offset = (toFloat w / 2)
     hpath = drawHilbert offset side model.path
-    draw = collage w w
+    draw = collage w w <|
            [ traced (solid black) (path [ (offset,offset),
                                           (offset,-offset),
                                           (-offset,-offset),
                                           (-offset,offset),
                                           (offset,offset) ])
            , traced (solid red) hpath
-           , circle side
-             |> filled blue
-             |> move ((toFloat x) - offset, (toFloat y) - offset)
            ]
-           -- ++ if model.play
-           --    then [
-           --         ]
-           --    else []
+           ++ if model.play
+              then [
+               circle (side * 0.7)
+                 |> filled blue
+                 |> move ((toFloat x) - offset, (toFloat y) - offset)
+              ]
+              else []
   in
   div [ style [ "height" => "100vw"
               , "width" => "100vw"

@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Hilbert's Curve, and the one dimensional translation. ",
+    "summary": "Hilbert's Curve, and the one dimensional translation into sound. ",
     "repository": "https://github.com/ibnHatab/hilbert.git",
     "license": "The Artistic License 2.0",
     "source-directories": [
@@ -8,13 +8,19 @@
         "src/Native"
     ],
     "exposed-modules": [
-        "Hilbert", "Dash", "LSystem", "Game", "Teremin"
+        "Hilbert",
+        "Dash",
+        "LSystem",
+        "Game",
+        "Teremin",
+        "Braille"
     ],
     "native-modules": true,
     "dependencies": {
         "elm-lang/core": "3.0.0 <= v < 4.0.0",
         "evancz/elm-effects": "2.0.1 <= v < 3.0.0",
         "evancz/elm-html": "4.0.2 <= v < 5.0.0",
+        "evancz/elm-svg": "2.0.1 <= v < 3.0.0",
         "evancz/start-app": "2.0.2 <= v < 3.0.0"
     },
     "elm-version": "0.16.0 <= v < 0.17.0"

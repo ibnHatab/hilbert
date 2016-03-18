@@ -1,4 +1,4 @@
-module Dash (Action, Model, init, update, view) where
+module Dash (Action(Resize), Model, init, update, view) where
 
 {-|
 @docs Model, Action, init, update, view
@@ -11,6 +11,7 @@ import Html.Events exposing (..)
 import Effects exposing (Effects, none)
 import Signal
 
+import Braille exposing (..)
 import Game
 
 -- MODEL
@@ -19,17 +20,20 @@ type alias Model =
   { game : Signal.Address Game.Events
   , rank : Int
   , freeMode : Bool
+  , dimention : (Int, Int)
   }
 
 
 {-|-}
 init : Signal.Address Game.Events
      -> Int
+     -> (Int, Int)
      -> (Model, Effects Action)
-init game rank =
+init game rank dimention =
   ( { game = game
     , rank = rank
     , freeMode = False
+    , dimention = dimention
     }
   , Effects.none
   )
@@ -41,6 +45,7 @@ type Action = Increment
             | Decrement
             | FreeMode
             | TaskDone ()
+            | Resize (Int, Int)
 
 {-|-}
 update : Action -> Model -> (Model, Effects Action)
@@ -51,6 +56,9 @@ update action model =
                      |> Effects.map TaskDone
   in
     case action |> Debug.log "dash_act" of
+      Resize dim ->
+        ( { model | dimention = dim }, Effects.none )
+
       Increment ->
         if checkRank (model.rank + 1)
         then ({ model | rank = model.rank + 1 }, notifyFx (Game.Rank (model.rank + 1)))
@@ -96,6 +104,7 @@ view address model =
                    , onClick address Decrement ]
                [div [textStyle] [text (toString (model.rank - 1))]]
              ]
+      side = round <| (toFloat (fst model.dimention)) / toFloat (2^model.rank)
   in div [ style ["height" => "25vw"] ]
      [ rank
        -- picters
@@ -104,7 +113,12 @@ view address model =
                    , "height" => "25vw"
                    , "border-radius" => "15vw"
                    , "border" => "1px solid blue"
-                   ]] []
+                   , "align" => "center"
+                   ]]
+             [
+              Braille.glyph [2,3,4,6] (side // 2)
+             , Braille.glyph [2,3,4,6] (side // 2)
+             ]
      , div [ style [ "float" =>  "right"
                    , "width" =>  "25vw"
                    , "height" =>  "25vw"

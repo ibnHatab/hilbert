@@ -9,3 +9,8 @@
   - intro ro WebAudio http://www.html5rocks.com/en/tutorials/webaudio/intro/?redirect_from_locale=fr
   - pitches and instrument presets http://codecur.io/us/projects/song-demo
   - WAVE-PD1 https://alexgibson.github.io/wavepad/
+
+
+* Improvements
+
+** TODO replcae round divs in dashboard with Element.inputs           :doit:
