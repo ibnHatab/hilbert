@@ -12,9 +12,9 @@ import Window
 import Task exposing (Task)
 import Mouse
 
-import Hilbert exposing (..) -- (init, update, view, Action)
-import Dash exposing (init, update, view)
-import Game exposing (Events)
+import Hilbert exposing (..)
+import Dash exposing (..)
+import Game exposing (..)
 import Teremin
 
 import Debug
@@ -22,8 +22,9 @@ import Debug
 -- MODEL
 type alias Model =
   {
-    dash: Dash.Model
-  , hilbert : Hilbert.Model
+    dash         : Dash.Model
+  , hilbert      : Hilbert.Model
+  , game         : Game.Model
   , statusString : Maybe String
   }
 
@@ -34,14 +35,16 @@ init =
     order = 3
     dim = (400, 600)
 
-    game = Signal.forwardTo actionsMb.address Game
+    gameHnd = Signal.forwardTo actionsMb.address Game
 
-    (dash, dashFx) = Dash.init game order dim
-    (hilbert, hilbertFx) = Hilbert.init game order dim
+    (dash, dashFx) = Dash.init gameHnd order dim
+    (hilbert, hilbertFx) = Hilbert.init gameHnd order dim
+    (game, gameFx) = Game.init gameHnd order
   in
-    ( Model dash hilbert Nothing
+    ( Model dash hilbert game Nothing
     , Effects.batch [ Effects.map Dash dashFx,
                       Effects.map Hilbert hilbertFx,
+                      Effects.map Game gameFx,
                       sendInitial
                     ]
     )
@@ -85,6 +88,10 @@ update message model =
               , statusString = if flag then Just "Free drawing mode" else Nothing}
             , Effects.map Hilbert hilbertFx
             )
+        Game.Question str ->
+          ({model | statusString = Just ("Question '" ++ str ++ "'")}, Effects.none)
+        Game.Answer str ->
+          ({model | statusString = Just ("Answer '" ++ str ++ "'")}, Effects.none)
 
     Dash act ->
       let

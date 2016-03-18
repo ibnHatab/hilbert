@@ -12720,11 +12720,383 @@ Elm.Braille.make = function (_elm) {
    $Svg$Attributes = Elm.Svg.Attributes.make(_elm);
    var _op = {};
    var braileASCII = $Dict.fromList(_U.list([{ctor: "_Tuple2"
-                                             ,_0: 21
+                                             ,_0: 32
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(" ")
+                                                  ,_1: _U.list([])
+                                                  ,_2: "(space)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 33
                                              ,_1: {ctor: "_Tuple3"
                                                   ,_0: _U.chr("!")
                                                   ,_1: _U.list([2,3,4,6])
-                                                  ,_2: "the"}}]));
+                                                  ,_2: "the"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 34
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("\"")
+                                                  ,_1: _U.list([5])
+                                                  ,_2: "(contraction)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 35
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("#")
+                                                  ,_1: _U.list([3,4,5,6])
+                                                  ,_2: "(number prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 36
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("$")
+                                                  ,_1: _U.list([1,2,4,6])
+                                                  ,_2: "ed"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 37
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("%")
+                                                  ,_1: _U.list([1,4,6])
+                                                  ,_2: "sh"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 38
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("&")
+                                                  ,_1: _U.list([1,2,3,4,6])
+                                                  ,_2: "and"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 39
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("\'")
+                                                  ,_1: _U.list([3])
+                                                  ,_2: "\'"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 40
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("(")
+                                                  ,_1: _U.list([1,2,3,5,6])
+                                                  ,_2: "of"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 41
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(")")
+                                                  ,_1: _U.list([2,3,4,5,6])
+                                                  ,_2: "with"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 42
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("*")
+                                                  ,_1: _U.list([1,6])
+                                                  ,_2: "ch"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 43
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("+")
+                                                  ,_1: _U.list([3,4,6])
+                                                  ,_2: "ing"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 44
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(",")
+                                                  ,_1: _U.list([6])
+                                                  ,_2: "(uppercase prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 45
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("-")
+                                                  ,_1: _U.list([3,6])
+                                                  ,_2: "-"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 46
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(".")
+                                                  ,_1: _U.list([4,6])
+                                                  ,_2: "(italic prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 47
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("/")
+                                                  ,_1: _U.list([3,4])
+                                                  ,_2: "st"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 48
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("0")
+                                                  ,_1: _U.list([3,5,6])
+                                                  ,_2: "\""}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 49
+                                             ,_1: {ctor: "_Tuple3",_0: _U.chr("1"),_1: _U.list([2]),_2: ","}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 50
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("2")
+                                                  ,_1: _U.list([2,3])
+                                                  ,_2: ";"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 51
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("3")
+                                                  ,_1: _U.list([2,5])
+                                                  ,_2: ":"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 52
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("4")
+                                                  ,_1: _U.list([2,5,6])
+                                                  ,_2: "."}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 53
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("5")
+                                                  ,_1: _U.list([2,6])
+                                                  ,_2: "en"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 54
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("6")
+                                                  ,_1: _U.list([2,3,5])
+                                                  ,_2: "!"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 55
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("7")
+                                                  ,_1: _U.list([2,3,5,6])
+                                                  ,_2: "( or )"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 56
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("8")
+                                                  ,_1: _U.list([2,3,6])
+                                                  ,_2: "\" or ?"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 57
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("9")
+                                                  ,_1: _U.list([3,5])
+                                                  ,_2: "in"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 58
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(":")
+                                                  ,_1: _U.list([1,5,6])
+                                                  ,_2: "wh"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 59
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(";")
+                                                  ,_1: _U.list([5,6])
+                                                  ,_2: "(letter prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 60
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("<")
+                                                  ,_1: _U.list([1,2,6])
+                                                  ,_2: "gh"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 61
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("=")
+                                                  ,_1: _U.list([1,2,3,4,5,6])
+                                                  ,_2: "for"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 62
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr(">")
+                                                  ,_1: _U.list([3,4,5])
+                                                  ,_2: "ar"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 63
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("?")
+                                                  ,_1: _U.list([1,4,5,6])
+                                                  ,_2: "th"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 64
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("@")
+                                                  ,_1: _U.list([4])
+                                                  ,_2: "(accent prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 65
+                                             ,_1: {ctor: "_Tuple3",_0: _U.chr("A"),_1: _U.list([1]),_2: "a"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 66
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("B")
+                                                  ,_1: _U.list([1,2])
+                                                  ,_2: "b"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 67
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("C")
+                                                  ,_1: _U.list([1,4])
+                                                  ,_2: "c"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 68
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("D")
+                                                  ,_1: _U.list([1,4,5])
+                                                  ,_2: "d"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 69
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("E")
+                                                  ,_1: _U.list([1,5])
+                                                  ,_2: "e"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 70
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("F")
+                                                  ,_1: _U.list([1,2,4])
+                                                  ,_2: "f"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 71
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("G")
+                                                  ,_1: _U.list([1,2,4,5])
+                                                  ,_2: "g"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 72
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("H")
+                                                  ,_1: _U.list([1,2,5])
+                                                  ,_2: "h"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 73
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("I")
+                                                  ,_1: _U.list([2,4])
+                                                  ,_2: "i"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 74
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("J")
+                                                  ,_1: _U.list([2,4,5])
+                                                  ,_2: "j"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 75
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("K")
+                                                  ,_1: _U.list([1,3])
+                                                  ,_2: "k"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 76
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("L")
+                                                  ,_1: _U.list([1,2,3])
+                                                  ,_2: "l"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 77
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("M")
+                                                  ,_1: _U.list([1,3,4])
+                                                  ,_2: "m"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 78
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("N")
+                                                  ,_1: _U.list([1,3,4,5])
+                                                  ,_2: "n"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 79
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("O")
+                                                  ,_1: _U.list([1,3,5])
+                                                  ,_2: "o"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 80
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("P")
+                                                  ,_1: _U.list([1,2,3,4])
+                                                  ,_2: "p"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 81
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("Q")
+                                                  ,_1: _U.list([1,2,3,4,5])
+                                                  ,_2: "q"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 82
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("R")
+                                                  ,_1: _U.list([1,2,3,5])
+                                                  ,_2: "r"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 83
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("S")
+                                                  ,_1: _U.list([2,3,4])
+                                                  ,_2: "s"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 84
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("T")
+                                                  ,_1: _U.list([2,3,4,5])
+                                                  ,_2: "t"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 85
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("U")
+                                                  ,_1: _U.list([1,3,6])
+                                                  ,_2: "u"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 86
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("V")
+                                                  ,_1: _U.list([1,2,3,6])
+                                                  ,_2: "v"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 87
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("W")
+                                                  ,_1: _U.list([2,4,5,6])
+                                                  ,_2: "w"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 88
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("X")
+                                                  ,_1: _U.list([1,3,4,6])
+                                                  ,_2: "x"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 89
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("Y")
+                                                  ,_1: _U.list([1,3,4,5,6])
+                                                  ,_2: "y"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 90
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("Z")
+                                                  ,_1: _U.list([1,3,5,6])
+                                                  ,_2: "z"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 91
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("[")
+                                                  ,_1: _U.list([2,4,6])
+                                                  ,_2: "ow"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 92
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("\\")
+                                                  ,_1: _U.list([1,2,5,6])
+                                                  ,_2: "ou"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 93
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("]")
+                                                  ,_1: _U.list([1,2,4,5,6])
+                                                  ,_2: "er"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 94
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("^")
+                                                  ,_1: _U.list([4,5])
+                                                  ,_2: "(currency prefix)"}}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: 95
+                                             ,_1: {ctor: "_Tuple3"
+                                                  ,_0: _U.chr("_")
+                                                  ,_1: _U.list([4,5,6])
+                                                  ,_2: "(contraction)"}}]));
    _op["=>"] = F2(function (prop,val) {
       return prop($Basics.toString(val));
    });
@@ -12803,12 +13175,27 @@ Elm.Game.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var maxRank = 6;
+   var step = F2(function (message,model) {
+      var _p0 = A2($Debug.log,"m_game",message);
+      switch (_p0.ctor)
+      {case "Question": return {ctor: "_Tuple2"
+                               ,_0: _U.update(model,{question: _p0._0})
+                               ,_1: $Effects.none};
+         case "Answer": return {ctor: "_Tuple2"
+                               ,_0: model
+                               ,_1: $Effects.none};
+         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+   });
+   var Answer = function (a) {    return {ctor: "Answer",_0: a};};
+   var Question = function (a) {
+      return {ctor: "Question",_0: a};
+   };
    var ShowError = function (a) {
       return {ctor: "ShowError",_0: a};
    };
@@ -12816,11 +13203,24 @@ Elm.Game.make = function (_elm) {
       return {ctor: "FreeMode",_0: a};
    };
    var Rank = function (a) {    return {ctor: "Rank",_0: a};};
+   var init = F2(function (game,order) {
+      return {ctor: "_Tuple2"
+             ,_0: {game: game,order: order,question: ""}
+             ,_1: $Effects.none};
+   });
+   var Model = F3(function (a,b,c) {
+      return {game: a,order: b,question: c};
+   });
+   var maxRank = 6;
    return _elm.Game.values = {_op: _op
+                             ,init: init
                              ,maxRank: maxRank
+                             ,Model: Model
                              ,Rank: Rank
                              ,FreeMode: FreeMode
-                             ,ShowError: ShowError};
+                             ,ShowError: ShowError
+                             ,Question: Question
+                             ,Answer: Answer};
 };Elm.Dash = Elm.Dash || {};
 Elm.Dash.make = function (_elm) {
    "use strict";
@@ -12828,7 +13228,6 @@ Elm.Dash.make = function (_elm) {
    if (_elm.Dash.values) return _elm.Dash.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $Braille = Elm.Braille.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Game = Elm.Game.make(_elm),
@@ -12843,12 +13242,20 @@ Elm.Dash.make = function (_elm) {
    _op["=>"] = F2(function (v0,v1) {
       return {ctor: "_Tuple2",_0: v0,_1: v1};
    });
-   var textStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],
-                                                  "font-size",
-                                                  "12vw")
-                                                  ,A2(_op["=>"],"font-family","monospace")
-                                                  ,A2(_op["=>"],"width","25vw")
-                                                  ,A2(_op["=>"],"text-align","center")]));
+   var textStyle = _U.list([A2(_op["=>"],"font-size","8vw")
+                           ,A2(_op["=>"],"font-family","monospace")
+                           ,A2(_op["=>"],"width","21vw")
+                           ,A2(_op["=>"],"text-align","center")]);
+   var smallButtonStyle = _U.list([A2(_op["=>"],"float","left")
+                                  ,A2(_op["=>"],"width","23vw")
+                                  ,A2(_op["=>"],"height","9vw")
+                                  ,A2(_op["=>"],"margin","1vw 1vw 1vw 1vw")
+                                  ,A2(_op["=>"],"border-radius","3vw")
+                                  ,A2(_op["=>"],"border","1vw")
+                                  ,A2(_op["=>"],"border-style","solid")]);
+   var SetImages = function (a) {
+      return {ctor: "SetImages",_0: a};
+   };
    var Resize = function (a) {    return {ctor: "Resize",_0: a};};
    var TaskDone = function (a) {
       return {ctor: "TaskDone",_0: a};
@@ -12883,83 +13290,74 @@ Elm.Dash.make = function (_elm) {
            return {ctor: "_Tuple2"
                   ,_0: _U.update(model,{freeMode: freeMode})
                   ,_1: notifyFx($Game.FreeMode(freeMode))};
+         case "SetImages": return {ctor: "_Tuple2"
+                                  ,_0: model
+                                  ,_1: $Effects.none};
          default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
    });
    var FreeMode = {ctor: "FreeMode"};
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
    var view = F2(function (address,model) {
-      var side = $Basics.round($Basics.toFloat($Basics.fst(model.dimention)) / $Basics.toFloat(Math.pow(2,
-      model.rank)));
-      var rank = A2($Html.div,
+      return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                              "float",
-                                              "left")
-                                              ,A2(_op["=>"],"width","25vw")
-                                              ,A2(_op["=>"],"height","25vw")]))]),
+      "height",
+      "25vw")]))]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
                                                       "float",
                                                       "left")
                                                       ,A2(_op["=>"],"width","25vw")
-                                                      ,A2(_op["=>"],"border-radius","15vw")
-                                                      ,A2(_op["=>"],"height","12vw")
-                                                      ,A2(_op["=>"],"background-color","red")]))
-                      ,A2($Html$Events.onClick,address,Increment)]),
+                                                      ,A2(_op["=>"],"height","25vw")]))]),
               _U.list([A2($Html.div,
-              _U.list([textStyle]),
-              _U.list([$Html.text($Basics.toString(model.rank))]))]))
+                      _U.list([$Html$Attributes.style(A2($Basics._op["++"],
+                              smallButtonStyle,
+                              textStyle))
+                              ,A2($Html$Events.onClick,address,Increment)]),
+                      _U.list([$Html.text($Basics.toString(model.rank))]))
+                      ,A2($Html.div,
+                      _U.list([$Html$Attributes.style(A2($Basics._op["++"],
+                              smallButtonStyle,
+                              textStyle))
+                              ,A2($Html$Events.onClick,address,Decrement)]),
+                      _U.list([$Html.text($Basics.toString(model.rank - 1))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
                                                       "float",
                                                       "left")
-                                                      ,A2(_op["=>"],"width","25vw")
-                                                      ,A2(_op["=>"],"border-radius","15vw")
-                                                      ,A2(_op["=>"],"height","13vw")
-                                                      ,A2(_op["=>"],"background-color","green")]))
-                      ,A2($Html$Events.onClick,address,Decrement)]),
-              _U.list([A2($Html.div,
-              _U.list([textStyle]),
-              _U.list([$Html.text($Basics.toString(model.rank - 1))]))]))]));
-      return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-      "height",
-      "25vw")]))]),
-      _U.list([rank
+                                                      ,A2(_op["=>"],"width","43vw")
+                                                      ,A2(_op["=>"],"height","22vw")
+                                                      ,A2(_op["=>"],"border-radius","3vw")
+                                                      ,A2(_op["=>"],"border","1vw")
+                                                      ,A2(_op["=>"],"border-style","solid")
+                                                      ,A2(_op["=>"],"margin","1vw 1vw 1vw 1vw")]))
+                      ,$Html$Attributes.align("center")]),
+              model.images)
               ,A2($Html.div,
-              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                                      "float",
-                                                      "left")
-                                                      ,A2(_op["=>"],"width","46vw")
-                                                      ,A2(_op["=>"],"height","25vw")
-                                                      ,A2(_op["=>"],"border-radius","15vw")
-                                                      ,A2(_op["=>"],"border","1px solid blue")
-                                                      ,A2(_op["=>"],"align","center")]))]),
-              _U.list([A2($Braille.glyph,_U.list([2,3,4,6]),side / 2 | 0)
-                      ,A2($Braille.glyph,_U.list([2,3,4,6]),side / 2 | 0)]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                                      "float",
-                                                      "right")
-                                                      ,A2(_op["=>"],"width","25vw")
-                                                      ,A2(_op["=>"],"height","25vw")
-                                                      ,A2(_op["=>"],"border-radius","15vw")
-                                                      ,A2(_op["=>"],
-                                                      "background-color",
-                                                      model.freeMode ? "green" : "red")]))
+              _U.list([$Html$Attributes.style(A2($Basics._op["++"],
+                      _U.list([A2(_op["=>"],"float","left")
+                              ,A2(_op["=>"],"width","21vw")
+                              ,A2(_op["=>"],"height","21vw")
+                              ,A2(_op["=>"],"border-radius","15vw")
+                              ,A2(_op["=>"],"margin","1vw 1vw 1vw 1vw")
+                              ,A2(_op["=>"],"border","1vw")
+                              ,A2(_op["=>"],"border-style","solid")
+                              ,A2(_op["=>"],"vertical-align","bottom")]),
+                      textStyle))
                       ,A2($Html$Events.onClick,address,FreeMode)]),
-              _U.list([]))]));
+              _U.list([model.freeMode ? $Html.text("F") : $Html.text("R")]))]));
    });
    var init = F3(function (game,rank,dimention) {
       return {ctor: "_Tuple2"
              ,_0: {game: game
                   ,rank: rank
                   ,freeMode: false
-                  ,dimention: dimention}
+                  ,dimention: dimention
+                  ,images: _U.list([])}
              ,_1: $Effects.none};
    });
-   var Model = F4(function (a,b,c,d) {
-      return {game: a,rank: b,freeMode: c,dimention: d};
+   var Model = F5(function (a,b,c,d,e) {
+      return {game: a,rank: b,freeMode: c,dimention: d,images: e};
    });
    return _elm.Dash.values = {_op: _op
                              ,init: init
@@ -13227,7 +13625,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 214,column: 3},end: {line: 218,column: 85}},
+      {start: {line: 213,column: 3},end: {line: 217,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -13260,7 +13658,7 @@ Elm.Hilbert.make = function (_elm) {
       w,
       A2($Basics._op["++"],
       _U.list([A2($Graphics$Collage.traced,
-              $Graphics$Collage.solid($Color.black),
+              $Graphics$Collage.dashed($Color.black),
               $Graphics$Collage.path(_U.list([{ctor: "_Tuple2"
                                               ,_0: offset
                                               ,_1: offset}
@@ -13282,9 +13680,7 @@ Elm.Hilbert.make = function (_elm) {
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
                                               "height",
                                               "100vw")
-                                              ,A2(_op["=>"],"width","100vw")
-                                              ,A2(_op["=>"],"border-radius","10vw")
-                                              ,A2(_op["=>"],"background-color","yellow")]))
+                                              ,A2(_op["=>"],"width","100")]))
               ,A2($Html$Events.onMouseDown,address,PlayStart)
               ,A2($Html$Events.onMouseUp,address,PlayStop)]),
       _U.list([$Html.fromElement(draw)]));
@@ -13550,7 +13946,7 @@ Elm.Main.make = function (_elm) {
                  case "ShowError": return {ctor: "_Tuple2"
                                           ,_0: _U.update(model,{statusString: $Maybe.Just(_p4._0)})
                                           ,_1: $Effects.none};
-                 default: var _p6 = _p4._0;
+                 case "FreeMode": var _p6 = _p4._0;
                    var _p5 = A2($Hilbert.update,
                    $Hilbert.FreeMode(_p6),
                    model.hilbert);
@@ -13560,7 +13956,19 @@ Elm.Main.make = function (_elm) {
                           ,_0: _U.update(model,
                           {hilbert: hilbert
                           ,statusString: _p6 ? $Maybe.Just("Free drawing mode") : $Maybe.Nothing})
-                          ,_1: A2($Effects.map,Hilbert,hilbertFx)};}
+                          ,_1: A2($Effects.map,Hilbert,hilbertFx)};
+                 case "Question": return {ctor: "_Tuple2"
+                                         ,_0: _U.update(model,
+                                         {statusString: $Maybe.Just(A2($Basics._op["++"],
+                                         "Question \'",
+                                         A2($Basics._op["++"],_p4._0,"\'")))})
+                                         ,_1: $Effects.none};
+                 default: return {ctor: "_Tuple2"
+                                 ,_0: _U.update(model,
+                                 {statusString: $Maybe.Just(A2($Basics._op["++"],
+                                 "Answer \'",
+                                 A2($Basics._op["++"],_p4._0,"\'")))})
+                                 ,_1: $Effects.none};}
             case "Dash": var _p7 = A2($Dash.update,_p0._0,model.dash);
               var dash = _p7._0;
               var dashFx = _p7._1;
@@ -13617,24 +14025,28 @@ Elm.Main.make = function (_elm) {
    var firstResize = A2($Signal.sampleOn,
    appStartMb.signal,
    windowResize);
-   var Model = F3(function (a,b,c) {
-      return {dash: a,hilbert: b,statusString: c};
+   var Model = F4(function (a,b,c,d) {
+      return {dash: a,hilbert: b,game: c,statusString: d};
    });
    var init = function () {
-      var game = A2($Signal.forwardTo,actionsMb.address,Game);
+      var gameHnd = A2($Signal.forwardTo,actionsMb.address,Game);
       var dim = {ctor: "_Tuple2",_0: 400,_1: 600};
       var order = 3;
-      var _p9 = A3($Dash.init,game,order,dim);
+      var _p9 = A3($Dash.init,gameHnd,order,dim);
       var dash = _p9._0;
       var dashFx = _p9._1;
-      var _p10 = A3($Hilbert.init,game,order,dim);
+      var _p10 = A3($Hilbert.init,gameHnd,order,dim);
       var hilbert = _p10._0;
       var hilbertFx = _p10._1;
-      var _p11 = $Teremin.init(0);
+      var _p11 = A2($Game.init,gameHnd,order);
+      var game = _p11._0;
+      var gameFx = _p11._1;
+      var _p12 = $Teremin.init(0);
       return {ctor: "_Tuple2"
-             ,_0: A3(Model,dash,hilbert,$Maybe.Nothing)
+             ,_0: A4(Model,dash,hilbert,game,$Maybe.Nothing)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
                                          ,A2($Effects.map,Hilbert,hilbertFx)
+                                         ,A2($Effects.map,Game,gameFx)
                                          ,sendInitial]))};
    }();
    var app = $StartApp.start({init: init

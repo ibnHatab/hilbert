@@ -21,6 +21,7 @@ type alias Model =
   , rank : Int
   , freeMode : Bool
   , dimention : (Int, Int)
+  , images : List Html
   }
 
 
@@ -34,6 +35,7 @@ init game rank dimention =
     , rank = rank
     , freeMode = False
     , dimention = dimention
+    , images = []
     }
   , Effects.none
   )
@@ -46,6 +48,7 @@ type Action = Increment
             | FreeMode
             | TaskDone ()
             | Resize (Int, Int)
+            | SetImages (List Html)
 
 {-|-}
 update : Action -> Model -> (Model, Effects Action)
@@ -74,67 +77,71 @@ update action model =
               in ( { model | freeMode = freeMode }
                  , notifyFx (Game.FreeMode freeMode))
 
+      SetImages images ->
+        ( model, Effects.none )
+
       TaskDone () ->
         ( model, Effects.none )
+
+smallButtonStyle =
+  [ "float" => "left"
+  , "width" => "23vw"
+  , "height" => "9vw"
+  , "margin" => "1vw 1vw 1vw 1vw"
+  , "border-radius" => "3vw"
+  , "border" => "1vw"
+  , "border-style" => "solid"
+  ]
+textStyle =
+  [ "font-size" => "8vw"
+  , "font-family" => "monospace"
+  , "width" => "21vw"
+  , "text-align" => "center"
+  ]
 
 -- VIEW
 (=>) = (,)
 {-|-}
 view : Signal.Address Action -> Model -> Html
 view address model =
-  let rank = div [ style [ "float" => "left"
-                         , "width" => "25vw"
-                         , "height" => "25vw"]]
-             [ -- red
-               div [ style [ "float" => "left"
-                           , "width" => "25vw"
-                           , "border-radius" => "15vw"
-                           , "height" => "12vw"
-                           , "background-color" => "red"
-                           ]
-                   , onClick address Increment ]
-               [div [textStyle] [text (toString model.rank)]]
-             -- green
-             , div [ style [ "float" => "left"
-                           , "width" => "25vw"
-                           , "border-radius" => "15vw"
-                           , "height" => "13vw"
-                           , "background-color" => "green"
-                           ]
-                   , onClick address Decrement ]
-               [div [textStyle] [text (toString (model.rank - 1))]]
-             ]
-      side = round <| (toFloat (fst model.dimention)) / toFloat (2^model.rank)
-  in div [ style ["height" => "25vw"] ]
-     [ rank
-       -- picters
-     , div [ style [ "float" => "left"
-                   , "width" => "46vw"
-                   , "height" => "25vw"
-                   , "border-radius" => "15vw"
-                   , "border" => "1px solid blue"
-                   , "align" => "center"
-                   ]]
-             [
-              Braille.glyph [2,3,4,6] (side // 2)
-             , Braille.glyph [2,3,4,6] (side // 2)
-             ]
-     , div [ style [ "float" =>  "right"
-                   , "width" =>  "25vw"
-                   , "height" =>  "25vw"
-                   , "border-radius" =>  "15vw"
-                   , "background-color" => if model.freeMode
-                                           then "green"
-                                           else "red"
-                   ]
-           , onClick address FreeMode
-           ] [  ]
-     ]
-
-textStyle : Attribute
-textStyle =
-  style [ "font-size" => "12vw"
-        , "font-family" => "monospace"
-        , "width" => "25vw"
-        , "text-align" => "center"
+  div [ style ["height" => "25vw"] ]
+        [ -- rank
+          div [ style [ "float" => "left"
+                      , "width" => "25vw"
+                      , "height" => "25vw"]
+              ]
+          [ div [ style (smallButtonStyle ++ textStyle)
+                , onClick address Increment ]
+            [ text (toString model.rank)]
+          , div [ style  (smallButtonStyle ++ textStyle)
+                , onClick address Decrement ]
+            [text (toString (model.rank - 1))]
+          ]
+        -- picters
+        , div [ style [ "float" => "left"
+                      , "width" => "43vw"
+                      , "height" => "22vw"
+                      , "border-radius" => "3vw"
+                      , "border" => "1vw"
+                      , "border-style" => "solid"
+                      , "margin" => "1vw 1vw 1vw 1vw"
+                      ]
+              ,  align "center"
+              ] model.images
+        -- start
+        , div [ style ([ "float" => "left"
+                       , "width" => "21vw"
+                       , "height" => "21vw"
+                       , "border-radius" =>  "15vw"
+                       , "margin" => "1vw 1vw 1vw 1vw"
+                       , "border" => "1vw"
+                       , "border-style" => "solid"
+                       , "vertical-align" => "bottom"
+                      ] ++ textStyle)
+              , onClick address FreeMode
+              ]
+          [ if model.freeMode
+            then text "F"
+            else text "R"
+          ]
         ]

@@ -176,7 +176,7 @@ view address model =
     offset = (toFloat w / 2)
     hpath = drawHilbert offset side model.path
     draw = collage w w <|
-           [ traced (solid black) (path [ (offset,offset),
+           [ traced (dashed black) (path [ (offset,offset),
                                           (offset,-offset),
                                           (-offset,-offset),
                                           (-offset,offset),
@@ -192,13 +192,12 @@ view address model =
               else []
   in
   div [ style [ "height" => "100vw"
-              , "width" => "100vw"
-              , "border-radius" => "10vw"
-              , "background-color" => "yellow"
-        ]
+              , "width" => "100"
+              ]
       , onMouseDown address PlayStart
       , onMouseUp address PlayStop ]
-  [ fromElement draw ]
+  [ fromElement draw
+  ]
 
 {-|
 direction (x, y) - unit vector
