@@ -68,10 +68,6 @@ Elm.Native.Teremin.make = function(localRuntime) {
         source.frequency.value = frequency;
     }
 
-    function setVolume(vol) {
-        source.frequency.value = vol;
-    }
-
 
     function init(args) {
         console.log("Initialize teremin." + args);
@@ -98,6 +94,11 @@ Elm.Native.Teremin.make = function(localRuntime) {
     function stopOsc(gain) {
         nodes.oscVolume.gain.value = gain;
     }
+
+    function setVolume(vol) {
+        nodes.volume.gain.value = vol;
+    }
+
 
     function playSound(buffer, time) {
         var source = context.createBufferSource();

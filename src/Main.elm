@@ -31,15 +31,16 @@ type alias Model =
 init : (Model, Effects Action)
 init =
   let
-    _ = Teremin.init(0)
-    order = 3
-    dim = (400, 600)
-
-    gameHnd = Signal.forwardTo actionsMb.address Game
-
-    (dash, dashFx) = Dash.init gameHnd order dim
-    (hilbert, hilbertFx) = Hilbert.init gameHnd order dim
-    (game, gameFx) = Game.init gameHnd order
+    gameMsgBox = Signal.forwardTo actionsMb.address Game
+    -- game
+    (game, gameFx) = Game.init gameMsgBox
+    -- dashboard
+    (dash, dashFx) = Dash.init game gameMsgBox
+    -- play ground
+    (hilbert, hilbertFx) = Hilbert.init game gameMsgBox
+    -- Webaudio & messaging system
+    _ = Teremin.init 0
+--    _ = Teremin.setFrequency 10 100
   in
     ( Model dash hilbert game Nothing
     , Effects.batch [ Effects.map Dash dashFx,
@@ -62,46 +63,46 @@ type Action
 update : Action -> Model -> (Model, Effects Action)
 update message model =
   case message |> Debug.log "m_act" of
-    NoOp -> (model, Effects.none)
-
-    WindowResize dim ->
+    Hilbert act ->
       let
-        (dash, dashFx) = Dash.update (Dash.Resize dim) model.dash
-        (hilbert, hilbertFx) = Hilbert.update (Hilbert.Resize dim) model.hilbert
-      in ( {model | dash = dash, hilbert = hilbert}
-         , Effects.batch [ Effects.map Dash dashFx,
-                           Effects.map Hilbert hilbertFx])
-
-    Game act ->
-      case act of
-        Game.Rank order ->
-          update (Hilbert (Hilbert.Order order)) model
-
-        Game.ShowError s ->
-          ({model | statusString = Just s}, Effects.none)
-
-        Game.FreeMode flag ->
-          let
-            (hilbert, hilbertFx) = Hilbert.update (Hilbert.FreeMode flag) model.hilbert
-          in
-            ( { model | hilbert = hilbert
-              , statusString = if flag then Just "Free drawing mode" else Nothing}
-            , Effects.map Hilbert hilbertFx
-            )
-        Game.Question str ->
-          ({model | statusString = Just ("Question '" ++ str ++ "'")}, Effects.none)
-        Game.Answer str ->
-          ({model | statusString = Just ("Answer '" ++ str ++ "'")}, Effects.none)
+        (hilbert, hilbertFx) = Hilbert.update act model.hilbert
+      in ({model | hilbert = hilbert}, Effects.map Hilbert hilbertFx)
 
     Dash act ->
       let
         (dash, dashFx) = Dash.update act model.dash
       in ({model | dash = dash}, Effects.map Dash dashFx)
 
-    Hilbert act ->
+    NoOp -> (model, Effects.none)
+
+    WindowResize dim ->
+      update (Game (Game.Geometry dim)) model
+
+    -- Broadcaast game events and state
+    Game act ->
       let
-        (hilbert, hilbertFx) = Hilbert.update act model.hilbert
-      in ({model | hilbert = hilbert}, Effects.map Hilbert hilbertFx)
+        (game, gameFx) = Game.update act model.game
+
+        (h, d)  = (model.hilbert, model.dash)
+        (hilbert, hilbertFx) = Hilbert.update (Hilbert.Game act) { h | game = game }
+        (dash, dashFx) = Dash.update (Dash.Game act) { d | game  = game }
+        --
+        (super, superFx) =
+          case act of
+            Game.Display (Game.Error s) ->
+              ({model | statusString = Just ("Error" ++ s)}, Effects.none)
+            Game.Display (Game.Info s) ->
+              ({model | statusString = Just s}, Effects.none)
+            otherwise ->
+              (model, Effects.none)
+
+      in ( { super | game = game, dash = dash, hilbert = hilbert}
+         , Effects.batch [ Effects.map Game gameFx
+                         , Effects.map Dash dashFx
+                         , Effects.map Hilbert hilbertFx
+                         , superFx])
+
+
 
 -- VIEW
 (=>) = (,)

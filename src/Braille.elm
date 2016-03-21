@@ -1,18 +1,20 @@
-module Braille (braileASCII, glyph) where
+module Braille (braileASCII, glyph, dots) where
 {-|
   The North American Braille ASCII Code
   https://en.wikipedia.org/wiki/Braille_ASCII
 
-@docs braileASCII, glyph
+@docs braileASCII, glyph, dots
 
 -}
 import Svg exposing (svg, rect, g, text, text', circle)
 import Svg.Attributes exposing (..)
+import Svg.Events exposing (onClick)
+
 import Html exposing (Html)
 
 import Dict exposing (Dict)
 import Array
-
+import Char
 
 (=>) prop val = prop (toString val)
 {-|
@@ -22,8 +24,8 @@ import Array
  (3) (6)
  (7) (8)
  -}
-glyph : List Int -> Int -> Html
-glyph dots side =
+glyph : Int -> List Int -> Maybe Signal.Message -> Html
+glyph side dots sig =
   let
     (w, h) = (2 * side, 4 * side)
     radius = side // 3
@@ -45,13 +47,26 @@ glyph dots side =
                                        fill f, stroke "black"]
               ) places fills
     bg = rect [ x => 0, y => 0, width => w, height => h
-              , rx => radius, ry => radius, style "fill: #60B5CC;"
+              , rx => radius, ry => radius, style "fill: grey"
+              -- "fill: #60B5CC;"
               ] []
+    allImg = (bg :: List.map ((flip circle)[]) allDots)
+    lst = case sig of
+            Just hnd ->
+              [g [onClick hnd] allImg]
+            Nothing -> allImg
+
   in svg [ width => w,
            height => h,
            viewBox ("0 0 " ++ (toString w) ++ " " ++ (toString h))
-       ] (bg :: List.map ((flip circle)[]) allDots)
+       ] lst
 
+
+{-| Dots for ASCII code -}
+dots : Char -> List Int
+dots c = case Dict.get (Char.toCode c) braileASCII of
+           Just (_, ds, _) -> ds
+           Nothing -> []
 
 {-| Braille ASCII table
                    Hex  ASCII    Braille Dots     Braille Meaning -}

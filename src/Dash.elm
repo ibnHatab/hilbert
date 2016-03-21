@@ -1,4 +1,4 @@
-module Dash (Action(Resize), Model, init, update, view) where
+module Dash (Model, Action(..), init, update, view) where
 
 {-|
 @docs Model, Action, init, update, view
@@ -10,6 +10,8 @@ import Html.Events exposing (..)
 
 import Effects exposing (Effects, none)
 import Signal
+import String exposing (toList)
+import Dict exposing (fromList)
 
 import Braille exposing (..)
 import Game
@@ -17,25 +19,21 @@ import Game
 -- MODEL
 {-|-}
 type alias Model =
-  { game : Signal.Address Game.Events
-  , rank : Int
-  , freeMode : Bool
-  , dimention : (Int, Int)
-  , images : List Html
+  {
+  -- last
+    game : Game.Model
+  , gameFx : Signal.Address Game.Events
   }
 
 
 {-|-}
-init : Signal.Address Game.Events
-     -> Int
-     -> (Int, Int)
+init : Game.Model -> Signal.Address Game.Events
      -> (Model, Effects Action)
-init game rank dimention =
-  ( { game = game
-    , rank = rank
-    , freeMode = False
-    , dimention = dimention
-    , images = []
+init game gameFx =
+  ( {
+    -- last
+      game = game
+    , gameFx = gameFx
     }
   , Effects.none
   )
@@ -43,45 +41,54 @@ init game rank dimention =
 -- UPDATE
 
 {-|-}
-type Action = Increment
-            | Decrement
-            | FreeMode
-            | TaskDone ()
-            | Resize (Int, Int)
-            | SetImages (List Html)
-
+type Action
+  = Game Game.Events
+  | Mode
+  | Increment
+  | Decrement
+  | Next
+  | Prev
+  | GlyphOnClick Int
 {-|-}
 update : Action -> Model -> (Model, Effects Action)
 update action model =
-  let checkRank new =  0 < new && new <= Game.maxRank
-      notifyFx event = Signal.send model.game event
+  let validOrder new = let c = Game.constants
+                      in 0 < new && new <= c.maxRank
+      notifyFx event = Signal.send model.gameFx event
                      |> Effects.task
-                     |> Effects.map TaskDone
+                     |> Effects.map (Game << Game.TaskDone)
   in
     case action |> Debug.log "dash_act" of
-      Resize dim ->
-        ( { model | dimention = dim }, Effects.none )
-
       Increment ->
-        if checkRank (model.rank + 1)
-        then ({ model | rank = model.rank + 1 }, notifyFx (Game.Rank (model.rank + 1)))
-        else (model, notifyFx (Game.ShowError "Max rank!") )
+        if validOrder (model.game.order + 1)
+        then (model, notifyFx (Game.Order (model.game.order + 1)))
+        else (model, notifyFx (Game.Display (Game.Error "MAX rank!")))
 
       Decrement ->
-        if checkRank (model.rank - 1)
-        then ( { model | rank = model.rank - 1 }
-             , notifyFx (Game.Rank (model.rank - 1)))
-        else (model, notifyFx (Game.ShowError "Min rank!"))
+        if validOrder (model.game.order - 1)
+        then (model, notifyFx (Game.Order (model.game.order - 1)))
+        else (model, notifyFx (Game.Display (Game.Error "MIN rank!")))
 
-      FreeMode -> let freeMode = not model.freeMode
-              in ( { model | freeMode = freeMode }
-                 , notifyFx (Game.FreeMode freeMode))
+      Mode ->
+        let newState = case model.game.state of
+                         Game.Begin -> Game.FreeMode
+                         Game.FreeMode -> Game.ChooseOne
+                         Game.ChooseOne -> Game.FreeMode
+                         _ -> Game.Begin
+        in
+          (model, notifyFx (Game.StateChange model.game.state newState))
 
-      SetImages images ->
+      GlyphOnClick n ->
+        ( model, notifyFx (Game.GiveAnswer (String.slice n (n+1) model.game.question )))
+      -- Game (Game.AskQuestion str) ->
+      --   ( {model | images = mkImages str }, Effects.none )
+
+      -- Game (Game.Geometry _) ->
+      --   ( {model | images = mkImages model.game.question }, Effects.none )
+
+      otherwise ->
         ( model, Effects.none )
 
-      TaskDone () ->
-        ( model, Effects.none )
 
 smallButtonStyle =
   [ "float" => "left"
@@ -104,44 +111,60 @@ textStyle =
 {-|-}
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [ style ["height" => "25vw"] ]
-        [ -- rank
-          div [ style [ "float" => "left"
-                      , "width" => "25vw"
-                      , "height" => "25vw"]
-              ]
-          [ div [ style (smallButtonStyle ++ textStyle)
-                , onClick address Increment ]
-            [ text (toString model.rank)]
-          , div [ style  (smallButtonStyle ++ textStyle)
-                , onClick address Decrement ]
-            [text (toString (model.rank - 1))]
+  let
+    mkImages str =
+      let
+        side = round <| (toFloat (fst model.game.geometry)) / (4*4.8)
+        fx n = Signal.message address (GlyphOnClick n)
+      in List.indexedMap (\idx c -> Braille.glyph side (Braille.dots c) (Just (fx idx))) (toList str)
+  in
+    div [ style ["height" => "25vw"] ]
+          [ -- rank
+            div [ style [ "float" => "left"
+                        , "width" => "25vw"
+                        , "height" => "25vw"]
+                ]
+            [ div [ style (smallButtonStyle ++ textStyle)
+                  , onClick address Increment ]
+              [ text (toString model.game.order)]
+            , div [ style  (smallButtonStyle ++ textStyle)
+                  , onClick address Decrement ]
+              [text (toString (model.game.order - 1))]
           ]
-        -- picters
-        , div [ style [ "float" => "left"
-                      , "width" => "43vw"
-                      , "height" => "22vw"
-                      , "border-radius" => "3vw"
-                      , "border" => "1vw"
-                      , "border-style" => "solid"
-                      , "margin" => "1vw 1vw 1vw 1vw"
-                      ]
-              ,  align "center"
-              ] model.images
-        -- start
-        , div [ style ([ "float" => "left"
-                       , "width" => "21vw"
-                       , "height" => "21vw"
-                       , "border-radius" =>  "15vw"
-                       , "margin" => "1vw 1vw 1vw 1vw"
-                       , "border" => "1vw"
-                       , "border-style" => "solid"
-                       , "vertical-align" => "bottom"
-                      ] ++ textStyle)
-              , onClick address FreeMode
-              ]
-          [ if model.freeMode
-            then text "F"
-            else text "R"
+          -- pics
+          , div [ style [ "float" => "left"
+                        , "width" => "43vw"
+                        , "height" => "22vw"
+                        , "border-radius" => "3vw"
+                        , "border" => "1vw"
+                        , "border-style" => "solid"
+                        , "margin" => "1vw 1vw 1vw 1vw"
+                        ]
+                , align "center"
+                ] [ div [ style [ "vertical-align" => "middle"
+                                , "height" => "23vw"
+                                , "display" => "table-cell"
+                                ]
+                        ] (mkImages model.game.question)
+                  ]
+
+          -- start
+          , div [ style ([ "float" => "left"
+                         , "width" => "21vw"
+                         , "height" => "21vw"
+                         , "border-radius" =>  "15vw"
+                         , "margin" => "1vw 1vw 1vw 1vw"
+                         , "border" => "1vw"
+                         , "border-style" => "solid"
+                         , "vertical-align" => "bottom"
+                         ] ++ textStyle)
+                , onClick address Mode
+                ]
+            [ text (case model.game.state of
+                      Game.Begin -> "B"
+                      Game.FreeMode -> "F"
+                      Game.ChooseOne -> "C"
+                      Game.TypeAnswer -> "T"
+                 )
           ]
         ]

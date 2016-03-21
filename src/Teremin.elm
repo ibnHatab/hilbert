@@ -27,5 +27,5 @@ setFrequency : Int -> Int -> ()
 setFrequency = Native.Teremin.setFrequency
 
 {-|-}
-setVolume : Int -> ()
+setVolume : Float -> ()
 setVolume = Native.Teremin.setVolume

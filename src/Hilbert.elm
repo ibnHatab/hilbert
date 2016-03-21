@@ -1,8 +1,8 @@
-module Hilbert (Model, init, Action(Order, Resize, FreeMode, MousePos), update, view) where
+module Hilbert (Model, Action(..), init, update, view) where
 
 {-|
 
-@docs Model, init, Action, update, view
+@docs Model, Action, init, update, view
 
 -}
 
@@ -89,36 +89,34 @@ hilbertPoint d n =
 {-|
 -}
 type alias Model =
-  { game : Signal.Address Events
-  , order : Int
-  , path : List Char
-  , dimention : (Int, Int)
-  , freeMode : Bool
+  { path : List Char
   , play : Bool
   , mousePosition : (Int, Int)
+  -- last
+  , game : Game.Model
+  , gameFx : Signal.Address Events
   }
 
--- init : Int -> (Int,Int) ->(Int,Int) -> Model
 {-|
 -}
-init : Signal.Address Events -> Int -> (Int,Int)
+init : Game.Model -> Signal.Address Events
      -> (Model, Effects Action)
-init game order dimention =
-  ({ game = game
-   , order = order
-   , path = computePath order
-   , dimention = dimention
-   , freeMode = False
+init game gameFx =
+  let _ = Teremin.setVolume 0.0
+      _ = Teremin.setFrequency 10 100
+  in
+  ({ path = computePath game.order
    , play = False
    , mousePosition = (0,0)
+   -- last
+   , game = game
+   , gameFx = gameFx
    }, Effects.none)
 
 {-|
 -}
 type Action
-  = Resize (Int, Int)
-  | Order Int
-  | FreeMode Bool
+  = Game Game.Events
   | MousePos (Int, Int)
   | Tick Time
   | PlayStart
@@ -129,28 +127,19 @@ type Action
 update : Action -> Model -> (Model, Effects Action)
 update act model =
   case act |> Debug.log "hilb_act" of
-    Resize dim ->
-      ( { model | dimention = dim }, Effects.none )
-    Order order ->
-      ( {model | order = order, path = computePath order }, Effects.none )
-
-    FreeMode flag ->
-        ( {model | freeMode = flag}, Effects.none)
+    Tick clockTime ->
+      (model, Effects.tick Tick )
 
     MousePos (ox, oy) ->
       let
-        (w, _) = model.dimention
-        side = round <| (toFloat w) / toFloat (2^model.order)
-        -- sum of offses in 32vw percentage from page top to canvas left-bottom
-        offset = round (toFloat w * 1.32)
-        (x, y) = (ox, offset - oy) |> Debug.log "xy"
-        distance = hilbertDistance model.order (x  // side, y  // side) |> Debug.log "dist"
-        _ = if model.play then Teremin.setFrequency distance (2^(model.order*2))  else ()
+        (w, _) = model.game.geometry |> Debug.log ">> "
+        side = round <| (toFloat w) / toFloat (2^model.game.order)
+        offset = round (toFloat w * 1.32) -- sum offsets from top ~ 32vw percentage
+        (x, y) = (ox, offset - oy)
+        distance = hilbertDistance model.game.order (x // side, y // side)
+        _ = if model.play then Teremin.setFrequency distance (2^(model.game.order*2))  else ()
       in
         ( { model | mousePosition = (x, y) }, Effects.none )
-
-    Tick clockTime ->
-      (model, Effects.tick Tick )
 
     PlayStart ->
       let
@@ -164,15 +153,33 @@ update act model =
       in
       ( { model | play = False }, Effects.none )
 
+    Game (Game.Order order) ->
+      ( {model | path = computePath model.game.order }, Effects.none )
+
+    Game (Game.StateChange old new) ->
+      case (old, new) of
+        (_, Game.FreeMode) ->
+          let _ = Teremin.setVolume 0.2 in
+          (model, Effects.none )
+        (Game.FreeMode, _) ->
+          let _ = Teremin.setVolume 0.0 in
+          (model, Effects.none )
+        (_,_) ->
+          (model, Effects.none )
+
+    otherwise ->
+      (model, Effects.none )
+
+
 (=>) = (,)
 {-|
 -}
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    (w, _) = model.dimention
+    (w, _) = model.game.geometry
     (x, y) = model.mousePosition
-    side = (toFloat w) / toFloat (2^model.order)
+    side = (toFloat w) / toFloat (2^model.game.order)
     offset = (toFloat w / 2)
     hpath = drawHilbert offset side model.path
     draw = collage w w <|
