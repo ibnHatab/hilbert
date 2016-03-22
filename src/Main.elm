@@ -160,7 +160,8 @@ app =
              , inputs = [ firstResize
                         , windowResize
                         , actionsMb.signal
-                        , mousePosition]
+                        , mousePosition
+                        , touchPosition]
              }
 {-|
 -}

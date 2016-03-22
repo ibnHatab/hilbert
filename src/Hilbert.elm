@@ -79,6 +79,7 @@ init game gameFx =
 type Action
   = Game Game.Events
   | MousePos (Int, Int)
+  | TouchPos List (Int, Int)
   | Tick Time
   | PlayStart
   | PlayStop

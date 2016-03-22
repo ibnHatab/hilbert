@@ -14316,7 +14316,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 363,column: 3},end: {line: 367,column: 85}},
+      {start: {line: 364,column: 3},end: {line: 368,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -14366,7 +14366,7 @@ Elm.Hilbert.make = function (_elm) {
                      }
                } while (false);
                return _U.crashCase("Hilbert",
-               {start: {line: 342,column: 14},end: {line: 347,column: 56}},
+               {start: {line: 343,column: 14},end: {line: 348,column: 56}},
                _p9)("wrong devider");
             }
       });
@@ -14448,6 +14448,9 @@ Elm.Hilbert.make = function (_elm) {
    var PlayStop = {ctor: "PlayStop"};
    var PlayStart = {ctor: "PlayStart"};
    var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+   var TouchPos = F2(function (a,b) {
+      return {ctor: "TouchPos",_0: a,_1: b};
+   });
    var MousePos = function (a) {
       return {ctor: "MousePos",_0: a};
    };
@@ -14638,7 +14641,7 @@ Elm.Hilbert.make = function (_elm) {
               return {ctor: "_Tuple2"
                      ,_0: _U.update(model,{play: false})
                      ,_1: $Effects.none};
-            default: switch (_p33._0.ctor)
+            case "Game": switch (_p33._0.ctor)
               {case "Order": return {ctor: "_Tuple2"
                                     ,_0: _U.update(model,{path: computePath(model.game.order)})
                                     ,_1: $Effects.none};
@@ -14705,7 +14708,8 @@ Elm.Hilbert.make = function (_elm) {
                                 ,_0: _U.update(model,{markers: markers,dots: dots})
                                 ,_1: $Effects.tick(Tick)};
                       } else return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-                 default: break _v13_7;}}
+                 default: break _v13_7;}
+            default: break _v13_7;}
       } while (false);
       return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
    });
@@ -14728,6 +14732,7 @@ Elm.Hilbert.make = function (_elm) {
                                 ,Model: Model
                                 ,Game: Game
                                 ,MousePos: MousePos
+                                ,TouchPos: TouchPos
                                 ,Tick: Tick
                                 ,PlayStart: PlayStart
                                 ,PlayStop: PlayStop};
@@ -14938,7 +14943,8 @@ Elm.Main.make = function (_elm) {
                              ,inputs: _U.list([firstResize
                                               ,windowResize
                                               ,actionsMb.signal
-                                              ,mousePosition])});
+                                              ,mousePosition
+                                              ,touchPosition])});
    var main = app.html;
    var runner = Elm.Native.Task.make(_elm).performSignal("runner",
    app.tasks);
