@@ -47,7 +47,7 @@ init gameFx =
   let seed0 = Random.initialSeed 31415
   in
   ( { order = constants.initOrder
-    , state = Begin
+    , state = FreeMode
     , geometry = constants.geometry
     , question = ""
     , answer = []
@@ -72,17 +72,17 @@ type Events
   | StateChange State State
   | Display Message
   | AskQuestion String
-  | GiveAnswer String
+  | GiveAnswer (List Int)
   | PlayHint
   | TaskDone ()
 
 
 generateQnA len =
   let
-    rlst = Random.list len (Random.int 0x20 0x5F
+    question = Random.list len (Random.int 0x20 0x5F
                             |> Random.map Char.fromCode)
-    rans = Random.int 0 len
-  in Random.pair rlst rans
+    answer = Random.int 0 (len-1)
+  in Random.pair question answer
 
 {-| Calculate new game state
 -}
@@ -127,8 +127,12 @@ update act model =
       AskQuestion q ->
         ({model | question = q}, Effects.none)
 
-      GiveAnswer _ ->
-        (model, Effects.none)
+      GiveAnswer answer ->
+        if answer == model.answer
+        then
+          (model, notifyFx (Display (Info "Right")))
+        else
+          (model, notifyFx (Display (Info "Wrong")))
 
 
       -- ignored events

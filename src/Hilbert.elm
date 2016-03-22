@@ -38,6 +38,7 @@ type alias Model =
   { path : List Char
   , play : Bool
   , mousePosition : (Int, Int)
+  , markers : List Int
   , dots : List (Int, Int)
   , animationState : AnimationState
   -- last
@@ -51,7 +52,6 @@ type alias AnimationState = Maybe
   { prevClockTime : Time
   , elapsedTime : Time
   , current : Int
-  , markers : List Int
   }
 
 {-|
@@ -59,12 +59,14 @@ type alias AnimationState = Maybe
 init : Game.Model -> Signal.Address Events
      -> (Model, Effects Action)
 init game gameFx =
-  let _ = Teremin.setVolume 0.0
+  let _ = Teremin.setVolume 0.2
       _ = Teremin.setFrequency 10 100
   in
   ({ path = computePath game.order
    , play = False
    , mousePosition = (0,0)
+   -- animation
+   , markers = []
    , dots = []
    , animationState = Nothing
    -- last
@@ -97,21 +99,22 @@ update act model =
                  |> Effects.task
                  |> Effects.map (Game << Game.TaskDone)
   in
-    case act -- |> Debug.log "hilb_act"
+    case act |> Debug.log "hilb_act"
     of
 
       Tick clockTime ->
-        let area = 2^ (2*model.game.order)
-            (newElapsedTime, lastCurrent, markers) =
+        if model.game.state == Game.ChooseOne
+        then
+          let area = 2^ (2*model.game.order)
+              (newElapsedTime, lastCurrent) =
               case model.animationState of
                 Nothing ->
-                  (0, 0, 0 :: List.map (hilbertDistance model.game.order) model.dots)
-                Just { prevClockTime, elapsedTime, current, markers } ->
-                  (elapsedTime + ( clockTime - prevClockTime ), current, markers)
-        in
+                  (0, 0)
+                Just { prevClockTime, elapsedTime, current} ->
+                  (elapsedTime + ( clockTime - prevClockTime ), current)
+          in
           if lastCurrent == (area - 1) then
             let _ = Teremin.stopOsc 0
-                _ = Teremin.setVolume 0.0
             in
             ({ model | animationState = Nothing }, Effects.none)
           else
@@ -121,14 +124,16 @@ update act model =
                                else floor ( (toFloat area) *
                                             (newElapsedTime/duration) )
           in
-            ( { model | animationState =
-                        Just { elapsedTime = newElapsedTime
-                             , prevClockTime = clockTime
-                             , current = current
-                             , markers = dropWhile ((>) current) markers
-                             }
+            ( { model |
+                animationState = Just { elapsedTime = newElapsedTime
+                                      , prevClockTime = clockTime
+                                      , current = current
+                                      }
+              , markers = dropWhile ((>) current) model.markers
               }
             , Effects.tick Tick )
+        else
+          ({model | animationState = Nothing }, Effects.none )
 
       MousePos (ox, oy) ->
         let
@@ -140,35 +145,30 @@ update act model =
           ({ model | mousePosition = (x, y) }, Effects.none)
 
       PlayStart ->
-        case model.game.state of
-          Game.FreeMode -> let  _ = Teremin.startOsc 1
-                           in ({ model | play = True }, Effects.none)
-          _ ->
-            (model, Effects.none)
+        let  _ = Teremin.startOsc 1
+        in ({ model | play = True }, Effects.none)
 
       PlayStop ->
-        case model.game.state of
-          Game.FreeMode -> let  _ = Teremin.stopOsc 0
-                           in ({ model | play = False }, Effects.none)
-          _ ->
-            (model, Effects.none)
+        let  _ = Teremin.stopOsc 0
+        in ({ model | play = False }, Effects.none)
 
       Game (Game.Order order) ->
         ({ model | path = computePath model.game.order }, Effects.none)
 
       Game (Game.StateChange old new) ->
         case (old, new) of
-          (_, Game.FreeMode) ->
-            let _ = Teremin.setVolume 0.2 in
-            (model, Effects.none )
-          (Game.FreeMode, _) ->
-            let _ = Teremin.setVolume 0.0 in
-            (model, Effects.none )
+          (Game.ChooseOne, Game.FreeMode) ->
+            let _ = Teremin.stopOsc 0
+                _ = Teremin.setVolume 0.2
+            in
+              ( {model | dots = []}, Effects.none )
+
           (_,_) ->
             (model, Effects.none )
 
       Game (Game.PlayHint) ->
-        let
+        if model.game.state == Game.ChooseOne
+        then let
           h3dots : Int -> (Int,Int)
           h3dots n = case n of
                        1 -> (0,3)
@@ -182,15 +182,26 @@ update act model =
                        _ -> (-1,-1)
           braille2dot : Int -> Char -> List (Int,Int)
           braille2dot n c = List.map h3dots (Braille.dots c)
-                          |> List.map (\(x,y) -> (x*2+2*n, y*2))
-                                                 -- FIXME: scale braille
-          dots = List.indexedMap braille2dot (toList model.game.question)
-               |> List.concat
+                          |> List.map (\(x,y) -> (x*2 + 4*n, y*2))
 
+          an = List.head model.game.answer |> Maybe.withDefault 0
+          (markers, dots) = (String.slice an (an+1) model.game.question)
+                          |> String.toList
+                          |> List.map (braille2dot an)
+                          |> List.concat
+                          |> List.map (\d -> (hilbertDistance model.game.order d, d))
+                          |> List.sortBy fst
+                          |> List.unzip
+                          |> Debug.log "dots"
+
+                    --          firstFreq = List.head dots
           _ = Teremin.startOsc 1
-          _ = Teremin.setVolume 0.2
-        in ( {model | dots = dots}, Effects.tick Tick )
+          _ = Teremin.setVolume 0.0
+          _ = Teremin.setFrequency 1000 100
+  --        _ = Teremin.setFrequency current (2^(model.game.order*2))
 
+        in ( {model | markers = markers, dots = dots}, Effects.tick Tick )
+        else (model, Effects.none )
       otherwise ->
         (model, Effects.none )
 
@@ -208,7 +219,7 @@ view address model =
     hpath = drawHilbert offset side model.path
 
     cursor = if not model.play then []
-             else [ circle (side * 0.7)
+             else [ circle (side * 0.5)
                       |> filled blue
                       |> move ((toFloat x) - offset, (toFloat y) - offset)
                   ]
@@ -238,21 +249,24 @@ view address model =
            , pointer
            ]
          |> collage w w
+
     -- make a sound
     _ = case model.animationState of
           Nothing -> ()
-            -- Teremin.stopOsc 0
-          Just { current, markers } ->
+          Just { current } ->
             let
-              _ = (current, markers) |> Debug.log "snd"
-              -- _ = Teremin.setFrequency current (2^(model.game.order*2))
-              -- _ = Teremin.setVolume 0.2
-              _ = case List.head markers of
-                    Nothing -> ()
+              area = 2^ (2*model.game.order)
+              _ = case List.head model.markers of
+                    Nothing ->
+                      Teremin.setVolume (0.2 * (1 - (toFloat current) / (toFloat area)))
+
                     Just m ->
                       if current == m
                       then
-                        Teremin.setFrequency current (2^(model.game.order*2))
+                        let
+                          _ = Teremin.setVolume 0.2
+                          _ = Teremin.setFrequency current area
+                        in ()
                       else  ()
                       -- Teremin.setVolume 0.4
             in ()

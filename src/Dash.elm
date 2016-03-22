@@ -79,7 +79,7 @@ update action model =
           (model, notifyFx (Game.StateChange model.game.state newState))
 
       GlyphOnClick n ->
-        ( model, notifyFx (Game.GiveAnswer (String.slice n (n+1) model.game.question )))
+        ( model, notifyFx (Game.GiveAnswer [n]))
 
       otherwise ->
         ( model, Effects.none )
