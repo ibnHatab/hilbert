@@ -111,7 +111,7 @@ update act model =
                , answer = [a]
                , seed = seed
                },
-               Effects.batch [ notifyFx (Display (Info ("Choose One of: " ++ question)))
+               Effects.batch [ notifyFx (Display (Info ("Choose One of: [" ++ question ++ "]")))
                              , notifyFx (AskQuestion question)
                              , notifyFx (PlayHint)
                              ])

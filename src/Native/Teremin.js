@@ -63,7 +63,6 @@ Elm.Native.Teremin.make = function(localRuntime) {
         var multiplier = Math.pow(2, numberOfOctaves * (((2 / range) * (range - val)) - 1.0));
         // Get back to the frequency value between min and max.
         var frequency = max * multiplier
-        console.log(">> " + frequency)
         nodes.filter.frequency.value = frequency;
         source.frequency.value = frequency;
     }

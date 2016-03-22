@@ -62,7 +62,8 @@ type Action
 
 update : Action -> Model -> (Model, Effects Action)
 update message model =
-  case message |> Debug.log "m_act" of
+  case message -- |> Debug.log "m_act"
+  of
     Hilbert act ->
       let
         (hilbert, hilbertFx) = Hilbert.update act model.hilbert

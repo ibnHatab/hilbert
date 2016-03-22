@@ -1,9 +1,10 @@
-module Hilbert (Model, Action(..), init, update, view) where
+module Hilbert (Model, Action(..), init, update, view, hilbertDistance, hilbertPoint) where
 
 {-|
 
 @docs Model, Action, init, update, view
 
+@docs hilbertDistance, hilbertPoint
 -}
 
 import Color exposing (..)
@@ -17,14 +18,263 @@ import Html.Events exposing (..)
 import Effects exposing (..)
 
 import Bitwise exposing (..)
-import String
+import String exposing (toList)
 import Dict
+
 
 import LSystem exposing (generation, LSystem)
 import Game exposing (Events)
+import Braille
 import Teremin
 
 import Time exposing (Time, second)
+
+
+-- MODEL
+
+{-|
+-}
+type alias Model =
+  { path : List Char
+  , play : Bool
+  , mousePosition : (Int, Int)
+  , dots : List (Int, Int)
+  , animationState : AnimationState
+  -- last
+  , game : Game.Model
+  , gameFx : Signal.Address Events
+  }
+
+duration = 4 * second
+
+type alias AnimationState = Maybe
+  { prevClockTime : Time
+  , elapsedTime : Time
+  , current : Int
+  , markers : List Int
+  }
+
+{-|
+-}
+init : Game.Model -> Signal.Address Events
+     -> (Model, Effects Action)
+init game gameFx =
+  let _ = Teremin.setVolume 0.0
+      _ = Teremin.setFrequency 10 100
+  in
+  ({ path = computePath game.order
+   , play = False
+   , mousePosition = (0,0)
+   , dots = []
+   , animationState = Nothing
+   -- last
+   , game = game
+   , gameFx = gameFx
+   }, Effects.none)
+
+{-|
+-}
+type Action
+  = Game Game.Events
+  | MousePos (Int, Int)
+  | Tick Time
+  | PlayStart
+  | PlayStop
+
+
+dropWhile : (a -> Bool) -> List a -> List a
+dropWhile predicate list =
+  case list of
+    []      -> []
+    x::xs   -> if (predicate x) then dropWhile predicate xs
+               else list
+
+{-|
+-}
+update : Action -> Model -> (Model, Effects Action)
+update act model =
+  let notifyFx event = Signal.send model.gameFx event
+                 |> Effects.task
+                 |> Effects.map (Game << Game.TaskDone)
+  in
+    case act -- |> Debug.log "hilb_act"
+    of
+
+      Tick clockTime ->
+        let area = 2^ (2*model.game.order)
+            (newElapsedTime, lastCurrent, markers) =
+              case model.animationState of
+                Nothing ->
+                  (0, 0, 0 :: List.map (hilbertDistance model.game.order) model.dots)
+                Just { prevClockTime, elapsedTime, current, markers } ->
+                  (elapsedTime + ( clockTime - prevClockTime ), current, markers)
+        in
+          if lastCurrent == (area - 1) then
+            let _ = Teremin.stopOsc 0
+                _ = Teremin.setVolume 0.0
+            in
+            ({ model | animationState = Nothing }, Effects.none)
+          else
+            let current = if newElapsedTime == 0 then 0
+                          else if newElapsedTime > duration
+                               then (area - 1)
+                               else floor ( (toFloat area) *
+                                            (newElapsedTime/duration) )
+          in
+            ( { model | animationState =
+                        Just { elapsedTime = newElapsedTime
+                             , prevClockTime = clockTime
+                             , current = current
+                             , markers = dropWhile ((>) current) markers
+                             }
+              }
+            , Effects.tick Tick )
+
+      MousePos (ox, oy) ->
+        let
+          (w, _) = model.game.geometry
+          offset = round (toFloat w * 1.32)
+          -- sum offsets from top ~ 32vw percentage
+          (x, y) = (ox, offset - oy)
+        in
+          ({ model | mousePosition = (x, y) }, Effects.none)
+
+      PlayStart ->
+        case model.game.state of
+          Game.FreeMode -> let  _ = Teremin.startOsc 1
+                           in ({ model | play = True }, Effects.none)
+          _ ->
+            (model, Effects.none)
+
+      PlayStop ->
+        case model.game.state of
+          Game.FreeMode -> let  _ = Teremin.stopOsc 0
+                           in ({ model | play = False }, Effects.none)
+          _ ->
+            (model, Effects.none)
+
+      Game (Game.Order order) ->
+        ({ model | path = computePath model.game.order }, Effects.none)
+
+      Game (Game.StateChange old new) ->
+        case (old, new) of
+          (_, Game.FreeMode) ->
+            let _ = Teremin.setVolume 0.2 in
+            (model, Effects.none )
+          (Game.FreeMode, _) ->
+            let _ = Teremin.setVolume 0.0 in
+            (model, Effects.none )
+          (_,_) ->
+            (model, Effects.none )
+
+      Game (Game.PlayHint) ->
+        let
+          h3dots : Int -> (Int,Int)
+          h3dots n = case n of
+                       1 -> (0,3)
+                       2 -> (0,2)
+                       3 -> (0,1)
+                       4 -> (1,3)
+                       5 -> (1,2)
+                       6 -> (1,1)
+                       7 -> (0,0)
+                       8 -> (0,0)
+                       _ -> (-1,-1)
+          braille2dot : Int -> Char -> List (Int,Int)
+          braille2dot n c = List.map h3dots (Braille.dots c)
+                          |> List.map (\(x,y) -> (x*2+2*n, y*2))
+                                                 -- FIXME: scale braille
+          dots = List.indexedMap braille2dot (toList model.game.question)
+               |> List.concat
+
+          _ = Teremin.startOsc 1
+          _ = Teremin.setVolume 0.2
+        in ( {model | dots = dots}, Effects.tick Tick )
+
+      otherwise ->
+        (model, Effects.none )
+
+
+(=>) = (,)
+{-|
+-}
+view : Signal.Address Action -> Model -> Html
+view address model =
+  let
+    (w, _) = model.game.geometry
+    (x, y) = model.mousePosition
+    side = (toFloat w) / toFloat (2^model.game.order)
+    offset = (toFloat w / 2)
+    hpath = drawHilbert offset side model.path
+
+    cursor = if not model.play then []
+             else [ circle (side * 0.7)
+                      |> filled blue
+                      |> move ((toFloat x) - offset, (toFloat y) - offset)
+                  ]
+
+    dot color (x, y) = circle (side * 0.4)
+                     |> filled color
+                     |> move ( (toFloat x) * side + side / 2 - offset
+                             , (toFloat y) * side + side / 2 - offset)
+
+    pointer = case model.animationState of
+                Nothing -> []
+                Just { current } -> [ dot red (hilbertPoint model.game.order current)]
+
+
+    dots = List.map (dot blue) model.dots
+
+    draw = List.concat [
+            [ traced (dashed black) (path [ (offset,offset),
+                                            (offset,-offset),
+                                            (-offset,-offset),
+                                            (-offset,offset),
+                                            (offset,offset) ])
+            , traced (solid red) hpath
+            ]
+           , dots
+           , cursor
+           , pointer
+           ]
+         |> collage w w
+    -- make a sound
+    _ = case model.animationState of
+          Nothing -> ()
+            -- Teremin.stopOsc 0
+          Just { current, markers } ->
+            let
+              _ = (current, markers) |> Debug.log "snd"
+              -- _ = Teremin.setFrequency current (2^(model.game.order*2))
+              -- _ = Teremin.setVolume 0.2
+              _ = case List.head markers of
+                    Nothing -> ()
+                    Just m ->
+                      if current == m
+                      then
+                        Teremin.setFrequency current (2^(model.game.order*2))
+                      else  ()
+                      -- Teremin.setVolume 0.4
+            in ()
+
+    _ = if model.play
+        then
+          let
+            scale = round side
+            distance = hilbertDistance
+                       model.game.order
+                       (x // scale, y // scale)
+          in Teremin.setFrequency distance (2^(model.game.order*2))
+        else ()
+  in
+  div [ style [ "height" => "100vw"
+              , "width" => "100"
+              ]
+      , onMouseDown address PlayStart
+      , onMouseUp address PlayStop
+      , onDoubleClick address (Game Game.PlayHint)]
+  [ fromElement draw
+  ]
 
 {-| L-system rules for Hilbert crve
 
@@ -84,127 +334,6 @@ hilbertPoint d n =
   in point (1 `shiftLeft` (d - 1)) (1 `shiftLeft` ((d - 1) * 2)) (0, 0) n
 
 
--- MODEL
-
-{-|
--}
-type alias Model =
-  { path : List Char
-  , play : Bool
-  , mousePosition : (Int, Int)
-  -- last
-  , game : Game.Model
-  , gameFx : Signal.Address Events
-  }
-
-{-|
--}
-init : Game.Model -> Signal.Address Events
-     -> (Model, Effects Action)
-init game gameFx =
-  let _ = Teremin.setVolume 0.0
-      _ = Teremin.setFrequency 10 100
-  in
-  ({ path = computePath game.order
-   , play = False
-   , mousePosition = (0,0)
-   -- last
-   , game = game
-   , gameFx = gameFx
-   }, Effects.none)
-
-{-|
--}
-type Action
-  = Game Game.Events
-  | MousePos (Int, Int)
-  | Tick Time
-  | PlayStart
-  | PlayStop
-
-{-|
--}
-update : Action -> Model -> (Model, Effects Action)
-update act model =
-  case act |> Debug.log "hilb_act" of
-    Tick clockTime ->
-      (model, Effects.tick Tick )
-
-    MousePos (ox, oy) ->
-      let
-        (w, _) = model.game.geometry |> Debug.log ">> "
-        side = round <| (toFloat w) / toFloat (2^model.game.order)
-        offset = round (toFloat w * 1.32) -- sum offsets from top ~ 32vw percentage
-        (x, y) = (ox, offset - oy)
-        distance = hilbertDistance model.game.order (x // side, y // side)
-        _ = if model.play then Teremin.setFrequency distance (2^(model.game.order*2))  else ()
-      in
-        ( { model | mousePosition = (x, y) }, Effects.none )
-
-    PlayStart ->
-      let
-        _ = Teremin.startOsc 1
-      in
-      ( { model | play = True }, Effects.none )
-
-    PlayStop ->
-      let
-        _ = Teremin.stopOsc 0
-      in
-      ( { model | play = False }, Effects.none )
-
-    Game (Game.Order order) ->
-      ( {model | path = computePath model.game.order }, Effects.none )
-
-    Game (Game.StateChange old new) ->
-      case (old, new) of
-        (_, Game.FreeMode) ->
-          let _ = Teremin.setVolume 0.2 in
-          (model, Effects.none )
-        (Game.FreeMode, _) ->
-          let _ = Teremin.setVolume 0.0 in
-          (model, Effects.none )
-        (_,_) ->
-          (model, Effects.none )
-
-    otherwise ->
-      (model, Effects.none )
-
-
-(=>) = (,)
-{-|
--}
-view : Signal.Address Action -> Model -> Html
-view address model =
-  let
-    (w, _) = model.game.geometry
-    (x, y) = model.mousePosition
-    side = (toFloat w) / toFloat (2^model.game.order)
-    offset = (toFloat w / 2)
-    hpath = drawHilbert offset side model.path
-    draw = collage w w <|
-           [ traced (dashed black) (path [ (offset,offset),
-                                          (offset,-offset),
-                                          (-offset,-offset),
-                                          (-offset,offset),
-                                          (offset,offset) ])
-           , traced (solid red) hpath
-           ]
-           ++ if model.play
-              then [
-               circle (side * 0.7)
-                 |> filled blue
-                 |> move ((toFloat x) - offset, (toFloat y) - offset)
-              ]
-              else []
-  in
-  div [ style [ "height" => "100vw"
-              , "width" => "100"
-              ]
-      , onMouseDown address PlayStart
-      , onMouseUp address PlayStop ]
-  [ fromElement draw
-  ]
 
 {-|
 direction (x, y) - unit vector

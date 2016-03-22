@@ -13596,8 +13596,8 @@ Elm.Game.make = function (_elm) {
                         ,_0: _U.update(model,
                         {state: _p3,question: question,answer: _U.list([a]),seed: seed})
                         ,_1: $Effects.batch(_U.list([notifyFx(Display(Info(A2($Basics._op["++"],
-                                                    "Choose One of: ",
-                                                    question))))
+                                                    "Choose One of: [",
+                                                    A2($Basics._op["++"],question,"]")))))
                                                     ,notifyFx(AskQuestion(question))
                                                     ,notifyFx(PlayHint)]))};
               } else {
@@ -13985,7 +13985,6 @@ Elm.Native.Teremin.make = function(localRuntime) {
         var multiplier = Math.pow(2, numberOfOctaves * (((2 / range) * (range - val)) - 1.0));
         // Get back to the frequency value between min and max.
         var frequency = max * multiplier
-        console.log(">> " + frequency)
         nodes.filter.frequency.value = frequency;
         source.frequency.value = frequency;
     }
@@ -14074,6 +14073,7 @@ Elm.Hilbert.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Bitwise = Elm.Bitwise.make(_elm),
+   $Braille = Elm.Braille.make(_elm),
    $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Dict = Elm.Dict.make(_elm),
@@ -14125,7 +14125,7 @@ Elm.Hilbert.make = function (_elm) {
             }
       } while (false);
       return _U.crashCase("Hilbert",
-      {start: {line: 220,column: 3},end: {line: 224,column: 85}},
+      {start: {line: 349,column: 3},end: {line: 353,column: 85}},
       _p2)(A2($String.cons,instruction," - unsuported instruction"));
    });
    var drawHilbert = F3(function (offset,side,p) {
@@ -14138,67 +14138,12 @@ Elm.Hilbert.make = function (_elm) {
                     ,_1: 0 - offset + side / 2}])},
       p)));
    });
-   _op["=>"] = F2(function (v0,v1) {
-      return {ctor: "_Tuple2",_0: v0,_1: v1};
-   });
-   var PlayStop = {ctor: "PlayStop"};
-   var PlayStart = {ctor: "PlayStart"};
-   var view = F2(function (address,model) {
-      var _p7 = model.mousePosition;
-      var x = _p7._0;
-      var y = _p7._1;
-      var _p8 = model.game.geometry;
-      var w = _p8._0;
-      var side = $Basics.toFloat(w) / $Basics.toFloat(Math.pow(2,
-      model.game.order));
-      var offset = $Basics.toFloat(w) / 2;
-      var hpath = A3(drawHilbert,offset,side,model.path);
-      var draw = A3($Graphics$Collage.collage,
-      w,
-      w,
-      A2($Basics._op["++"],
-      _U.list([A2($Graphics$Collage.traced,
-              $Graphics$Collage.dashed($Color.black),
-              $Graphics$Collage.path(_U.list([{ctor: "_Tuple2"
-                                              ,_0: offset
-                                              ,_1: offset}
-                                             ,{ctor: "_Tuple2",_0: offset,_1: 0 - offset}
-                                             ,{ctor: "_Tuple2",_0: 0 - offset,_1: 0 - offset}
-                                             ,{ctor: "_Tuple2",_0: 0 - offset,_1: offset}
-                                             ,{ctor: "_Tuple2",_0: offset,_1: offset}])))
-              ,A2($Graphics$Collage.traced,
-              $Graphics$Collage.solid($Color.red),
-              hpath)]),
-      model.play ? _U.list([A2($Graphics$Collage.move,
-      {ctor: "_Tuple2"
-      ,_0: $Basics.toFloat(x) - offset
-      ,_1: $Basics.toFloat(y) - offset},
-      A2($Graphics$Collage.filled,
-      $Color.blue,
-      $Graphics$Collage.circle(side * 0.7)))]) : _U.list([])));
-      return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
-                                              "height",
-                                              "100vw")
-                                              ,A2(_op["=>"],"width","100")]))
-              ,A2($Html$Events.onMouseDown,address,PlayStart)
-              ,A2($Html$Events.onMouseUp,address,PlayStop)]),
-      _U.list([$Html.fromElement(draw)]));
-   });
-   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
-   var MousePos = function (a) {
-      return {ctor: "MousePos",_0: a};
-   };
-   var Game = function (a) {    return {ctor: "Game",_0: a};};
-   var Model = F5(function (a,b,c,d,e) {
-      return {path: a,play: b,mousePosition: c,game: d,gameFx: e};
-   });
    var hilbertPoint = F2(function (d,n) {
-      var point = F4(function (side,area,_p9,n) {
-         var _p10 = _p9;
-         var _p14 = _p10._1;
-         var _p13 = _p10._0;
-         if (_U.eq(side,0)) return {ctor: "_Tuple2",_0: _p13,_1: _p14};
+      var point = F4(function (side,area,_p7,n) {
+         var _p8 = _p7;
+         var _p12 = _p8._1;
+         var _p11 = _p8._0;
+         if (_U.eq(side,0)) return {ctor: "_Tuple2",_0: _p11,_1: _p12};
          else {
                var divMod = F2(function (x,y) {
                   return {ctor: "_Tuple2"
@@ -14208,30 +14153,30 @@ Elm.Hilbert.make = function (_elm) {
                var step = A2(point,
                A2($Bitwise.shiftRight,side,1),
                A2($Bitwise.shiftRight,area,2));
-               var _p11 = A2(divMod,n,area);
+               var _p9 = A2(divMod,n,area);
                _v3_4: do {
-                  if (_p11.ctor === "_Tuple2") {
-                        switch (_p11._0)
+                  if (_p9.ctor === "_Tuple2") {
+                        switch (_p9._0)
                         {case 0: return A2(step,
-                             {ctor: "_Tuple2",_0: _p13,_1: _p14},
-                             _p11._1);
+                             {ctor: "_Tuple2",_0: _p11,_1: _p12},
+                             _p9._1);
                            case 1: return A2(step,
-                             {ctor: "_Tuple2",_0: _p13,_1: _p14 + side},
-                             _p11._1);
+                             {ctor: "_Tuple2",_0: _p11,_1: _p12 + side},
+                             _p9._1);
                            case 2: return A2(step,
-                             {ctor: "_Tuple2",_0: _p13 + side,_1: _p14 + side},
-                             _p11._1);
+                             {ctor: "_Tuple2",_0: _p11 + side,_1: _p12 + side},
+                             _p9._1);
                            case 3: return A2(step,
-                             {ctor: "_Tuple2",_0: _p13 + side,_1: _p14},
-                             _p11._1);
+                             {ctor: "_Tuple2",_0: _p11 + side,_1: _p12},
+                             _p9._1);
                            default: break _v3_4;}
                      } else {
                         break _v3_4;
                      }
                } while (false);
                return _U.crashCase("Hilbert",
-               {start: {line: 78,column: 14},end: {line: 83,column: 56}},
-               _p11)("wrong devider");
+               {start: {line: 328,column: 14},end: {line: 333,column: 56}},
+               _p9)("wrong devider");
             }
       });
       return A4(point,
@@ -14240,24 +14185,24 @@ Elm.Hilbert.make = function (_elm) {
       {ctor: "_Tuple2",_0: 0,_1: 0},
       n);
    });
-   var hilbertDistance = F2(function (d,_p15) {
-      var _p16 = _p15;
+   var hilbertDistance = F2(function (d,_p13) {
+      var _p14 = _p13;
       var dist = F5(function (side,area,result,x,y) {
          if (_U.eq(side,0)) return result; else {
                var step = A2(dist,
                A2($Bitwise.shiftRight,side,1),
                A2($Bitwise.shiftRight,area,2));
-               var _p17 = {ctor: "_Tuple2"
+               var _p15 = {ctor: "_Tuple2"
                           ,_0: A2($Basics.compare,x,side)
                           ,_1: A2($Basics.compare,y,side)};
-               if (_p17._0.ctor === "LT") {
-                     if (_p17._1.ctor === "LT") {
+               if (_p15._0.ctor === "LT") {
+                     if (_p15._1.ctor === "LT") {
                            return A3(step,result,y,x);
                         } else {
                            return A3(step,result + area,x,y - side);
                         }
                   } else {
-                     if (_p17._1.ctor === "LT") {
+                     if (_p15._1.ctor === "LT") {
                            return A3(step,
                            result + area * 3,
                            side - y - 1,
@@ -14272,8 +14217,8 @@ Elm.Hilbert.make = function (_elm) {
       A2($Bitwise.shiftLeft,1,d - 1),
       A2($Bitwise.shiftLeft,1,(d - 1) * 2),
       0,
-      _p16._0,
-      _p16._1);
+      _p14._0,
+      _p14._1);
    });
    var hilbert = {axiom: _U.list([_U.chr("A")])
                  ,rules: $Dict.fromList(_U.list([{ctor: "_Tuple2"
@@ -14291,82 +14236,299 @@ Elm.Hilbert.make = function (_elm) {
          return _.axiom;
       }(A2($LSystem.generation,order,hilbert)));
    };
+   _op["=>"] = F2(function (v0,v1) {
+      return {ctor: "_Tuple2",_0: v0,_1: v1};
+   });
+   var dropWhile = F2(function (predicate,list) {
+      dropWhile: while (true) {
+         var _p16 = list;
+         if (_p16.ctor === "[]") {
+               return _U.list([]);
+            } else {
+               if (predicate(_p16._0)) {
+                     var _v7 = predicate,_v8 = _p16._1;
+                     predicate = _v7;
+                     list = _v8;
+                     continue dropWhile;
+                  } else return list;
+            }
+      }
+   });
+   var PlayStop = {ctor: "PlayStop"};
+   var PlayStart = {ctor: "PlayStart"};
+   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+   var MousePos = function (a) {
+      return {ctor: "MousePos",_0: a};
+   };
+   var Game = function (a) {    return {ctor: "Game",_0: a};};
+   var view = F2(function (address,model) {
+      var _p17 = function () {
+         var _p18 = model.animationState;
+         if (_p18.ctor === "Nothing") {
+               return {ctor: "_Tuple0"};
+            } else {
+               var _p23 = _p18._0.markers;
+               var _p22 = _p18._0.current;
+               var _p19 = function () {
+                  var _p20 = $List.head(_p23);
+                  if (_p20.ctor === "Nothing") {
+                        return {ctor: "_Tuple0"};
+                     } else {
+                        return _U.eq(_p22,_p20._0) ? A2($Teremin.setFrequency,
+                        _p22,
+                        Math.pow(2,model.game.order * 2)) : {ctor: "_Tuple0"};
+                     }
+               }();
+               var _p21 = A2($Debug.log,
+               "snd",
+               {ctor: "_Tuple2",_0: _p22,_1: _p23});
+               return {ctor: "_Tuple0"};
+            }
+      }();
+      var _p24 = model.mousePosition;
+      var x = _p24._0;
+      var y = _p24._1;
+      var _p25 = model.game.geometry;
+      var w = _p25._0;
+      var side = $Basics.toFloat(w) / $Basics.toFloat(Math.pow(2,
+      model.game.order));
+      var _p26 = function () {
+         if (model.play) {
+               var scale = $Basics.round(side);
+               var distance = A2(hilbertDistance,
+               model.game.order,
+               {ctor: "_Tuple2",_0: x / scale | 0,_1: y / scale | 0});
+               return A2($Teremin.setFrequency,
+               distance,
+               Math.pow(2,model.game.order * 2));
+            } else return {ctor: "_Tuple0"};
+      }();
+      var offset = $Basics.toFloat(w) / 2;
+      var hpath = A3(drawHilbert,offset,side,model.path);
+      var cursor = $Basics.not(model.play) ? _U.list([]) : _U.list([A2($Graphics$Collage.move,
+      {ctor: "_Tuple2"
+      ,_0: $Basics.toFloat(x) - offset
+      ,_1: $Basics.toFloat(y) - offset},
+      A2($Graphics$Collage.filled,
+      $Color.blue,
+      $Graphics$Collage.circle(side * 0.7)))]);
+      var dot = F2(function (color,_p27) {
+         var _p28 = _p27;
+         return A2($Graphics$Collage.move,
+         {ctor: "_Tuple2"
+         ,_0: $Basics.toFloat(_p28._0) * side + side / 2 - offset
+         ,_1: $Basics.toFloat(_p28._1) * side + side / 2 - offset},
+         A2($Graphics$Collage.filled,
+         color,
+         $Graphics$Collage.circle(side * 0.4)));
+      });
+      var pointer = function () {
+         var _p29 = model.animationState;
+         if (_p29.ctor === "Nothing") {
+               return _U.list([]);
+            } else {
+               return _U.list([A2(dot,
+               $Color.red,
+               A2(hilbertPoint,model.game.order,_p29._0.current))]);
+            }
+      }();
+      var dots = A2($List.map,dot($Color.blue),model.dots);
+      var draw = A3($Graphics$Collage.collage,
+      w,
+      w,
+      $List.concat(_U.list([_U.list([A2($Graphics$Collage.traced,
+                                    $Graphics$Collage.dashed($Color.black),
+                                    $Graphics$Collage.path(_U.list([{ctor: "_Tuple2"
+                                                                    ,_0: offset
+                                                                    ,_1: offset}
+                                                                   ,{ctor: "_Tuple2",_0: offset,_1: 0 - offset}
+                                                                   ,{ctor: "_Tuple2",_0: 0 - offset,_1: 0 - offset}
+                                                                   ,{ctor: "_Tuple2",_0: 0 - offset,_1: offset}
+                                                                   ,{ctor: "_Tuple2",_0: offset,_1: offset}])))
+                                    ,A2($Graphics$Collage.traced,
+                                    $Graphics$Collage.solid($Color.red),
+                                    hpath)])
+                           ,dots
+                           ,cursor
+                           ,pointer])));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],
+                                              "height",
+                                              "100vw")
+                                              ,A2(_op["=>"],"width","100")]))
+              ,A2($Html$Events.onMouseDown,address,PlayStart)
+              ,A2($Html$Events.onMouseUp,address,PlayStop)
+              ,A2($Html$Events.onDoubleClick,address,Game($Game.PlayHint))]),
+      _U.list([$Html.fromElement(draw)]));
+   });
    var init = F2(function (game,gameFx) {
-      var _p18 = A2($Teremin.setFrequency,10,100);
-      var _p19 = $Teremin.setVolume(0.0);
+      var _p30 = A2($Teremin.setFrequency,10,100);
+      var _p31 = $Teremin.setVolume(0.0);
       return {ctor: "_Tuple2"
              ,_0: {path: computePath(game.order)
                   ,play: false
                   ,mousePosition: {ctor: "_Tuple2",_0: 0,_1: 0}
+                  ,dots: _U.list([])
+                  ,animationState: $Maybe.Nothing
                   ,game: game
                   ,gameFx: gameFx}
              ,_1: $Effects.none};
    });
+   var duration = 4 * $Time.second;
    var update = F2(function (act,model) {
-      var _p20 = A2($Debug.log,"hilb_act",act);
-      _v6_6: do {
-         switch (_p20.ctor)
-         {case "Tick": return {ctor: "_Tuple2"
-                              ,_0: model
-                              ,_1: $Effects.tick(Tick)};
-            case "MousePos": if (_p20._0.ctor === "_Tuple2") {
-                    var _p21 = A2($Debug.log,">> ",model.game.geometry);
-                    var w = _p21._0;
-                    var side = $Basics.round($Basics.toFloat(w) / $Basics.toFloat(Math.pow(2,
-                    model.game.order)));
+      var notifyFx = function (event) {
+         return A2($Effects.map,
+         function (_p32) {
+            return Game($Game.TaskDone(_p32));
+         },
+         $Effects.task(A2($Signal.send,model.gameFx,event)));
+      };
+      var _p33 = act;
+      _v13_7: do {
+         switch (_p33.ctor)
+         {case "Tick": var _p38 = _p33._0;
+              var _p34 = function () {
+                 var _p35 = model.animationState;
+                 if (_p35.ctor === "Nothing") {
+                       return {ctor: "_Tuple3"
+                              ,_0: 0
+                              ,_1: 0
+                              ,_2: A2($List._op["::"],
+                              0,
+                              A2($List.map,hilbertDistance(model.game.order),model.dots))};
+                    } else {
+                       return {ctor: "_Tuple3"
+                              ,_0: _p35._0.elapsedTime + (_p38 - _p35._0.prevClockTime)
+                              ,_1: _p35._0.current
+                              ,_2: _p35._0.markers};
+                    }
+              }();
+              var newElapsedTime = _p34._0;
+              var lastCurrent = _p34._1;
+              var markers = _p34._2;
+              var area = Math.pow(2,2 * model.game.order);
+              if (_U.eq(lastCurrent,area - 1)) {
+                    var _p36 = $Teremin.setVolume(0.0);
+                    var _p37 = $Teremin.stopOsc(0);
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.update(model,{animationState: $Maybe.Nothing})
+                           ,_1: $Effects.none};
+                 } else {
+                    var current = _U.eq(newElapsedTime,
+                    0) ? 0 : _U.cmp(newElapsedTime,
+                    duration) > 0 ? area - 1 : $Basics.floor($Basics.toFloat(area) * (newElapsedTime / duration));
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.update(model,
+                           {animationState: $Maybe.Just({elapsedTime: newElapsedTime
+                                                        ,prevClockTime: _p38
+                                                        ,current: current
+                                                        ,markers: A2(dropWhile,
+                                                        F2(function (x,y) {    return _U.cmp(x,y) > 0;})(current),
+                                                        markers)})})
+                           ,_1: $Effects.tick(Tick)};
+                 }
+            case "MousePos": if (_p33._0.ctor === "_Tuple2") {
+                    var _p39 = model.game.geometry;
+                    var w = _p39._0;
                     var offset = $Basics.round($Basics.toFloat(w) * 1.32);
-                    var _p22 = {ctor: "_Tuple2"
-                               ,_0: _p20._0._0
-                               ,_1: offset - _p20._0._1};
-                    var x = _p22._0;
-                    var y = _p22._1;
-                    var distance = A2(hilbertDistance,
-                    model.game.order,
-                    {ctor: "_Tuple2",_0: x / side | 0,_1: y / side | 0});
-                    var _p23 = model.play ? A2($Teremin.setFrequency,
-                    distance,
-                    Math.pow(2,model.game.order * 2)) : {ctor: "_Tuple0"};
+                    var _p40 = {ctor: "_Tuple2"
+                               ,_0: _p33._0._0
+                               ,_1: offset - _p33._0._1};
+                    var x = _p40._0;
+                    var y = _p40._1;
                     return {ctor: "_Tuple2"
                            ,_0: _U.update(model,
                            {mousePosition: {ctor: "_Tuple2",_0: x,_1: y}})
                            ,_1: $Effects.none};
                  } else {
-                    break _v6_6;
+                    break _v13_7;
                  }
-            case "PlayStart": var _p24 = $Teremin.startOsc(1);
-              return {ctor: "_Tuple2"
-                     ,_0: _U.update(model,{play: true})
-                     ,_1: $Effects.none};
-            case "PlayStop": var _p25 = $Teremin.stopOsc(0);
-              return {ctor: "_Tuple2"
-                     ,_0: _U.update(model,{play: false})
-                     ,_1: $Effects.none};
-            default: switch (_p20._0.ctor)
+            case "PlayStart": var _p41 = model.game.state;
+              if (_p41.ctor === "FreeMode") {
+                    var _p42 = $Teremin.startOsc(1);
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.update(model,{play: true})
+                           ,_1: $Effects.none};
+                 } else {
+                    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+                 }
+            case "PlayStop": var _p43 = model.game.state;
+              if (_p43.ctor === "FreeMode") {
+                    var _p44 = $Teremin.stopOsc(0);
+                    return {ctor: "_Tuple2"
+                           ,_0: _U.update(model,{play: false})
+                           ,_1: $Effects.none};
+                 } else {
+                    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+                 }
+            default: switch (_p33._0.ctor)
               {case "Order": return {ctor: "_Tuple2"
                                     ,_0: _U.update(model,{path: computePath(model.game.order)})
                                     ,_1: $Effects.none};
-                 case "StateChange": var _p26 = {ctor: "_Tuple2"
-                                                ,_0: _p20._0._0
-                                                ,_1: _p20._0._1};
-                   if (_p26._1.ctor === "FreeMode") {
-                         var _p27 = $Teremin.setVolume(0.2);
+                 case "StateChange": var _p45 = {ctor: "_Tuple2"
+                                                ,_0: _p33._0._0
+                                                ,_1: _p33._0._1};
+                   if (_p45._1.ctor === "FreeMode") {
+                         var _p46 = $Teremin.setVolume(0.2);
                          return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
                       } else {
-                         if (_p26._0.ctor === "FreeMode") {
-                               var _p28 = $Teremin.setVolume(0.0);
+                         if (_p45._0.ctor === "FreeMode") {
+                               var _p47 = $Teremin.setVolume(0.0);
                                return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
                             } else {
                                return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
                             }
                       }
-                 default: break _v6_6;}}
+                 case "PlayHint": var _p48 = $Teremin.setVolume(0.2);
+                   var _p49 = $Teremin.startOsc(1);
+                   var h3dots = function (n) {
+                      var _p50 = n;
+                      switch (_p50)
+                      {case 1: return {ctor: "_Tuple2",_0: 0,_1: 3};
+                         case 2: return {ctor: "_Tuple2",_0: 0,_1: 2};
+                         case 3: return {ctor: "_Tuple2",_0: 0,_1: 1};
+                         case 4: return {ctor: "_Tuple2",_0: 1,_1: 3};
+                         case 5: return {ctor: "_Tuple2",_0: 1,_1: 2};
+                         case 6: return {ctor: "_Tuple2",_0: 1,_1: 1};
+                         case 7: return {ctor: "_Tuple2",_0: 0,_1: 0};
+                         case 8: return {ctor: "_Tuple2",_0: 0,_1: 0};
+                         default: return {ctor: "_Tuple2",_0: -1,_1: -1};}
+                   };
+                   var braille2dot = F2(function (n,c) {
+                      return A2($List.map,
+                      function (_p51) {
+                         var _p52 = _p51;
+                         return {ctor: "_Tuple2"
+                                ,_0: _p52._0 * 2 + 2 * n
+                                ,_1: _p52._1 * 2};
+                      },
+                      A2($List.map,h3dots,$Braille.dots(c)));
+                   });
+                   var dots = $List.concat(A2($List.indexedMap,
+                   braille2dot,
+                   $String.toList(model.game.question)));
+                   return {ctor: "_Tuple2"
+                          ,_0: _U.update(model,{dots: dots})
+                          ,_1: $Effects.tick(Tick)};
+                 default: break _v13_7;}}
       } while (false);
       return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+   });
+   var Model = F7(function (a,b,c,d,e,f,g) {
+      return {path: a
+             ,play: b
+             ,mousePosition: c
+             ,dots: d
+             ,animationState: e
+             ,game: f
+             ,gameFx: g};
    });
    return _elm.Hilbert.values = {_op: _op
                                 ,init: init
                                 ,update: update
                                 ,view: view
+                                ,hilbertDistance: hilbertDistance
+                                ,hilbertPoint: hilbertPoint
                                 ,Model: Model
                                 ,Game: Game
                                 ,MousePos: MousePos
@@ -14423,7 +14585,7 @@ Elm.Main.make = function (_elm) {
    var Dash = function (a) {    return {ctor: "Dash",_0: a};};
    var update = F2(function (message,model) {
       update: while (true) {
-         var _p0 = A2($Debug.log,"m_act",message);
+         var _p0 = message;
          switch (_p0.ctor)
          {case "Hilbert": var _p1 = A2($Hilbert.update,
               _p0._0,

@@ -71,20 +71,15 @@ update action model =
 
       Mode ->
         let newState = case model.game.state of
-                         Game.Begin -> Game.FreeMode
-                         Game.FreeMode -> Game.ChooseOne
+                         Game.Begin     -> Game.FreeMode
+                         Game.FreeMode  -> Game.ChooseOne
                          Game.ChooseOne -> Game.FreeMode
-                         _ -> Game.Begin
+                         _              -> Game.Begin
         in
           (model, notifyFx (Game.StateChange model.game.state newState))
 
       GlyphOnClick n ->
         ( model, notifyFx (Game.GiveAnswer (String.slice n (n+1) model.game.question )))
-      -- Game (Game.AskQuestion str) ->
-      --   ( {model | images = mkImages str }, Effects.none )
-
-      -- Game (Game.Geometry _) ->
-      --   ( {model | images = mkImages model.game.question }, Effects.none )
 
       otherwise ->
         ( model, Effects.none )
