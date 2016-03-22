@@ -153,7 +153,8 @@ update act model =
           -- sum offsets from top ~ 32vw percentage
           (x, y) = (ox, offset - oy)
         in
-          ({ model | mousePosition = (x, y) }, Effects.none)
+          ({ model | mousePosition = (x, y) }
+          , Effects.none)
 
       PlayStart ->
         let  _ = Teremin.startOsc 1

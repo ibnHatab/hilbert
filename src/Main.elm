@@ -142,11 +142,11 @@ mousePosition =
     |> Signal.map (\p -> (Hilbert (Hilbert.MousePos p)))
 
 
-touchPosition = Touch.touches
-              |> Signal.map (\ps ->
-                               let px = List.map (\{x, y} -> (x,y)) ps
-                               in
-                                (Hilbert (Hilbert.TouchPos (px))))
+-- touchPosition = Touch.touches
+--               |> Signal.map (\ps ->
+--                                let px = List.map (\{x, y} -> (x,y)) ps
+--                                in
+--                                 (Hilbert (Hilbert.TouchPos (px))))
 
 
 -- APP
@@ -159,7 +159,7 @@ app =
                         , windowResize
                         , actionsMb.signal
                         , mousePosition
-                        , touchPosition]
+                        ]
              }
 {-|
 -}
