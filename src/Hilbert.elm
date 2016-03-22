@@ -79,7 +79,7 @@ init game gameFx =
 type Action
   = Game Game.Events
   | MousePos (Int, Int)
-  | TouchPos List (Int, Int)
+  | TouchPos (List (Int, Int))
   | Tick Time
   | PlayStart
   | PlayStop
@@ -138,6 +138,16 @@ update act model =
 
       MousePos (ox, oy) ->
         let
+          (w, _) = model.game.geometry
+          offset = round (toFloat w * 1.32)
+          -- sum offsets from top ~ 32vw percentage
+          (x, y) = (ox, offset - oy)
+        in
+          ({ model | mousePosition = (x, y) }, Effects.none)
+
+      TouchPos (t::ts) ->
+        let
+          (ox,oy) = t
           (w, _) = model.game.geometry
           offset = round (toFloat w * 1.32)
           -- sum offsets from top ~ 32vw percentage

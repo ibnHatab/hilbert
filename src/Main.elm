@@ -143,13 +143,11 @@ mousePosition =
 
 
 touchPosition = Touch.touches
-              |> Signal.map (\t ->
-                               case t of
-                                 ({x,y}::ts) ->
-                                   (Hilbert (Hilbert.MousePos (x,y)))
-                                 [] ->
-                                   (Hilbert (Hilbert.MousePos (0,0)))
-                            )
+              |> Signal.map (\ps ->
+                               let px = List.map (\{x, y} -> (x,y)) ps
+                               in
+                                (Hilbert (Hilbert.TouchPos (px))))
+
 
 -- APP
 app =
