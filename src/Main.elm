@@ -11,6 +11,7 @@ import StartApp
 import Window
 import Task exposing (Task)
 import Mouse
+import Touch
 
 import Hilbert exposing (..)
 import Dash exposing (..)
@@ -140,6 +141,8 @@ mousePosition =
     |> Signal.map fst
     |> Signal.map (\p -> (Hilbert (Hilbert.MousePos p)))
 
+
+touchPosition = Signal.map (\{x, y} -> (Hilbert (Hilbert.MousePos (x,y)))) Touch.taps
 
 -- APP
 app =

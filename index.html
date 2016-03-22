@@ -9209,6 +9209,179 @@ Elm.Mouse.make = function (_elm) {
                               ,isDown: isDown
                               ,clicks: clicks};
 };Elm.Native = Elm.Native || {};
+Elm.Native.Touch = {};
+Elm.Native.Touch.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Touch = localRuntime.Native.Touch || {};
+	if (localRuntime.Native.Touch.values)
+	{
+		return localRuntime.Native.Touch.values;
+	}
+
+	var Signal = Elm.Signal.make(localRuntime);
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var List = Elm.Native.List.make(localRuntime);
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+	function Dict() {
+		this.keys = [];
+		this.values = [];
+
+		this.insert = function(key, value) {
+			this.keys.push(key);
+			this.values.push(value);
+		};
+		this.lookup = function(key) {
+			var i = this.keys.indexOf(key);
+			return i >= 0 ? this.values[i] : {x: 0, y: 0, t: 0};
+		};
+		this.remove = function(key) {
+			var i = this.keys.indexOf(key);
+			if (i < 0) return;
+			var t = this.values[i];
+			this.keys.splice(i, 1);
+			this.values.splice(i, 1);
+			return t;
+		};
+		this.clear = function() {
+			this.keys = [];
+			this.values = [];
+		};
+	}
+
+	var root = NS.input('touch', []),
+		tapTime = 500,
+		hasTap = false,
+		tap = { x: 0, y: 0},
+		dict = new Dict();
+
+	function touch(t) {
+		var r = dict.lookup(t.identifier);
+		var point = Utils.getXY(t);
+		return {
+			id: t.identifier,
+			x: point._0,
+			y: point._1,
+			x0: r.x,
+			y0: r.y,
+			t0: r.t
+		 };
+	}
+
+	var node = localRuntime.isFullscreen()
+		? document
+		: localRuntime.node;
+
+	function start(e) {
+		var point = Utils.getXY(e);
+		dict.insert(e.identifier, {
+			x: point._0,
+			y: point._1,
+			t: localRuntime.timer.now()
+		});
+	}
+	function end(e) {
+		var t = dict.remove(e.identifier);
+		if (localRuntime.timer.now() - t.t < tapTime)
+		{
+			hasTap = true;
+			tap = {
+				x: t.x,
+				y: t.y
+			};
+		}
+	}
+
+	function listen(name, f) {
+		function update(e) {
+			for (var i = e.changedTouches.length; i--; ) {
+				f(e.changedTouches[i]);
+			}
+			var ts = new Array(e.touches.length);
+			for (var i = e.touches.length; i--; ) {
+				ts[i] = touch(e.touches[i]);
+			}
+			localRuntime.notify(root.id, ts);
+			e.preventDefault();
+		}
+		localRuntime.addListener([root.id], node, name, update);
+	}
+
+	listen('touchstart', start);
+	listen('touchmove', function(_) {});
+	listen('touchend', end);
+	listen('touchcancel', end);
+	listen('touchleave', end);
+
+	var mouseID = -1;
+	function move(e) {
+		var point = Utils.getXY(e);
+		for (var i = root.value.length; i--; ) {
+			if (root.value[i].id === mouseID)
+			{
+				root.value[i].x = point._0;
+				root.value[i].y = point._1;
+				localRuntime.notify(root.id, root.value);
+				break;
+			}
+		}
+	}
+	localRuntime.addListener([root.id], node, 'mousedown', function down(e) {
+		node.addEventListener('mousemove', move);
+		e.identifier = mouseID;
+		start(e);
+		root.value.push(touch(e));
+		localRuntime.notify(root.id, root.value);
+	});
+	localRuntime.addListener([root.id], document, 'mouseup', function up(e) {
+		node.removeEventListener('mousemove', move);
+		e.identifier = mouseID;
+		end(e);
+		for (var i = root.value.length; i--; ) {
+			if (root.value[i].id === mouseID)
+			{
+				root.value.splice(i, 1);
+				--mouseID;
+				break;
+			}
+		}
+		localRuntime.notify(root.id, root.value);
+	});
+	localRuntime.addListener([root.id], node, 'blur', function blur(e) {
+		node.removeEventListener('mousemove', move);
+		if (root.value.length > 0)
+		{
+			localRuntime.notify(root.id, []);
+			--mouseID;
+		}
+		dict.clear();
+	});
+
+	function dependency(f) {
+		var sig = A2( Signal.map, f, root );
+		root.defaultNumberOfKids += 1;
+		sig.defaultNumberOfKids = 0;
+		return sig;
+	}
+
+	var touches = dependency(List.fromArray);
+
+	var taps = function() {
+		var sig = dependency(function(_) { return tap; });
+		sig.defaultNumberOfKids = 1;
+		function pred(_) {
+			var b = hasTap;
+			hasTap = false;
+			return b;
+		}
+		var sig2 = A3(Signal.filter, pred, {x: 0, y: 0}, sig);
+		sig2.defaultNumberOfKids = 0;
+		return sig2;
+	}();
+
+	return localRuntime.Native.Touch.values = { touches: touches, taps: taps };
+};
+Elm.Native = Elm.Native || {};
 Elm.Native.Window = {};
 Elm.Native.Window.make = function make(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
@@ -9551,6 +9724,25 @@ Elm.Random.make = function (_elm) {
                                ,maxInt: maxInt
                                ,generate: generate
                                ,initialSeed: initialSeed};
+};Elm.Touch = Elm.Touch || {};
+Elm.Touch.make = function (_elm) {
+   "use strict";
+   _elm.Touch = _elm.Touch || {};
+   if (_elm.Touch.values) return _elm.Touch.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Native$Touch = Elm.Native.Touch.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var taps = $Native$Touch.taps;
+   var touches = $Native$Touch.touches;
+   var Touch = F6(function (a,b,c,d,e,f) {
+      return {x: a,y: b,id: c,x0: d,y0: e,t0: f};
+   });
+   return _elm.Touch.values = {_op: _op
+                              ,touches: touches
+                              ,taps: taps
+                              ,Touch: Touch};
 };Elm.Window = Elm.Window || {};
 Elm.Window.make = function (_elm) {
    "use strict";
@@ -14561,6 +14753,7 @@ Elm.Main.make = function (_elm) {
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm),
    $Teremin = Elm.Teremin.make(_elm),
+   $Touch = Elm.Touch.make(_elm),
    $Window = Elm.Window.make(_elm);
    var _op = {};
    var appStartMb = $Signal.mailbox({ctor: "_Tuple0"});
@@ -14586,73 +14779,81 @@ Elm.Main.make = function (_elm) {
    }),
    $Mouse.position,
    $Mouse.isDown))));
+   var touchPosition = A2($Signal.map,
+   function (_p0) {
+      var _p1 = _p0;
+      return Hilbert($Hilbert.MousePos({ctor: "_Tuple2"
+                                       ,_0: _p1.x
+                                       ,_1: _p1.y}));
+   },
+   $Touch.taps);
    var Dash = function (a) {    return {ctor: "Dash",_0: a};};
    var update = F2(function (message,model) {
       update: while (true) {
-         var _p0 = message;
-         switch (_p0.ctor)
-         {case "Hilbert": var _p1 = A2($Hilbert.update,
-              _p0._0,
+         var _p2 = message;
+         switch (_p2.ctor)
+         {case "Hilbert": var _p3 = A2($Hilbert.update,
+              _p2._0,
               model.hilbert);
-              var hilbert = _p1._0;
-              var hilbertFx = _p1._1;
+              var hilbert = _p3._0;
+              var hilbertFx = _p3._1;
               return {ctor: "_Tuple2"
                      ,_0: _U.update(model,{hilbert: hilbert})
                      ,_1: A2($Effects.map,Hilbert,hilbertFx)};
-            case "Dash": var _p2 = A2($Dash.update,_p0._0,model.dash);
-              var dash = _p2._0;
-              var dashFx = _p2._1;
+            case "Dash": var _p4 = A2($Dash.update,_p2._0,model.dash);
+              var dash = _p4._0;
+              var dashFx = _p4._1;
               return {ctor: "_Tuple2"
                      ,_0: _U.update(model,{dash: dash})
                      ,_1: A2($Effects.map,Dash,dashFx)};
             case "NoOp": return {ctor: "_Tuple2"
                                 ,_0: model
                                 ,_1: $Effects.none};
-            case "WindowResize": var _v1 = Game($Game.Geometry(_p0._0)),
-              _v2 = model;
-              message = _v1;
-              model = _v2;
+            case "WindowResize": var _v2 = Game($Game.Geometry(_p2._0)),
+              _v3 = model;
+              message = _v2;
+              model = _v3;
               continue update;
-            default: var _p9 = _p0._0;
-              var _p3 = function () {
-                 var _p4 = _p9;
-                 _v3_2: do {
-                    if (_p4.ctor === "Display") {
-                          switch (_p4._0.ctor)
+            default: var _p11 = _p2._0;
+              var _p5 = function () {
+                 var _p6 = _p11;
+                 _v4_2: do {
+                    if (_p6.ctor === "Display") {
+                          switch (_p6._0.ctor)
                           {case "Error": return {ctor: "_Tuple2"
                                                 ,_0: _U.update(model,
                                                 {statusString: $Maybe.Just(A2($Basics._op["++"],
                                                 "Error",
-                                                _p4._0._0))})
+                                                _p6._0._0))})
                                                 ,_1: $Effects.none};
                              case "Info": return {ctor: "_Tuple2"
-                                                 ,_0: _U.update(model,{statusString: $Maybe.Just(_p4._0._0)})
+                                                 ,_0: _U.update(model,{statusString: $Maybe.Just(_p6._0._0)})
                                                  ,_1: $Effects.none};
-                             default: break _v3_2;}
+                             default: break _v4_2;}
                        } else {
-                          break _v3_2;
+                          break _v4_2;
                        }
                  } while (false);
                  return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
               }();
-              var $super = _p3._0;
-              var superFx = _p3._1;
-              var _p5 = {ctor: "_Tuple2",_0: model.hilbert,_1: model.dash};
-              var h = _p5._0;
-              var d = _p5._1;
-              var _p6 = A2($Game.update,_p9,model.game);
-              var game = _p6._0;
-              var gameFx = _p6._1;
-              var _p7 = A2($Hilbert.update,
-              $Hilbert.Game(_p9),
+              var $super = _p5._0;
+              var superFx = _p5._1;
+              var _p7 = {ctor: "_Tuple2",_0: model.hilbert,_1: model.dash};
+              var h = _p7._0;
+              var d = _p7._1;
+              var _p8 = A2($Game.update,_p11,model.game);
+              var game = _p8._0;
+              var gameFx = _p8._1;
+              var _p9 = A2($Hilbert.update,
+              $Hilbert.Game(_p11),
               _U.update(h,{game: game}));
-              var hilbert = _p7._0;
-              var hilbertFx = _p7._1;
-              var _p8 = A2($Dash.update,
-              $Dash.Game(_p9),
+              var hilbert = _p9._0;
+              var hilbertFx = _p9._1;
+              var _p10 = A2($Dash.update,
+              $Dash.Game(_p11),
               _U.update(d,{game: game}));
-              var dash = _p8._0;
-              var dashFx = _p8._1;
+              var dash = _p10._0;
+              var dashFx = _p10._1;
               return {ctor: "_Tuple2"
                      ,_0: _U.update($super,{game: game,dash: dash,hilbert: hilbert})
                      ,_1: $Effects.batch(_U.list([A2($Effects.map,Game,gameFx)
@@ -14707,17 +14908,17 @@ Elm.Main.make = function (_elm) {
       return {dash: a,hilbert: b,game: c,statusString: d};
    });
    var init = function () {
-      var _p10 = $Teremin.init(0);
+      var _p12 = $Teremin.init(0);
       var gameMsgBox = A2($Signal.forwardTo,actionsMb.address,Game);
-      var _p11 = $Game.init(gameMsgBox);
-      var game = _p11._0;
-      var gameFx = _p11._1;
-      var _p12 = A2($Dash.init,game,gameMsgBox);
-      var dash = _p12._0;
-      var dashFx = _p12._1;
-      var _p13 = A2($Hilbert.init,game,gameMsgBox);
-      var hilbert = _p13._0;
-      var hilbertFx = _p13._1;
+      var _p13 = $Game.init(gameMsgBox);
+      var game = _p13._0;
+      var gameFx = _p13._1;
+      var _p14 = A2($Dash.init,game,gameMsgBox);
+      var dash = _p14._0;
+      var dashFx = _p14._1;
+      var _p15 = A2($Hilbert.init,game,gameMsgBox);
+      var hilbert = _p15._0;
+      var hilbertFx = _p15._1;
       return {ctor: "_Tuple2"
              ,_0: A4(Model,dash,hilbert,game,$Maybe.Nothing)
              ,_1: $Effects.batch(_U.list([A2($Effects.map,Dash,dashFx)
@@ -14751,6 +14952,7 @@ Elm.Main.make = function (_elm) {
                              ,sendInitial: sendInitial
                              ,actionsMb: actionsMb
                              ,mousePosition: mousePosition
+                             ,touchPosition: touchPosition
                              ,app: app
                              ,main: main};
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script></body></html>
